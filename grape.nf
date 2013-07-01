@@ -1,27 +1,29 @@
 #!/usr/bin/env nextflow
 
-params.inputFolder='./tutorial/data'
-params.input='./tutorial/data/genome_1Mbp.fa'
+params.genome='./tutorial/data/genome_1Mbp.fa'
 params.annotation='./tutorial/data/annotation.gtf'
-params.output_dir='./tutorial/results'
-params.name='annotation'
-params.tt_index='./tutorial/data/annotation.gtf'
-
+params.name='genname'
 params.primary='./tutorial/data/test_1.fastq'
 params.secondary='./tutorial/data/test_2.fastq'
 params.quality=33
 
+/* 
+ * Enable/disable tasks stdout print 
+ */
+params.echo = true
+echo params.echo
 
-inputFile      = file(params.input)
+
+inputFile      = file(params.genome)
 annotationFile = file(params.annotation)
 primaryFile    = file(params.primary)
 secondaryFile  = file(params.secondary)
-quality        = params.quality
 
-
+/* 
+ * Since the GEM index is going to be provided as input of both tasks 'transcriptom-index' and 'rna-pipeline'
+ * it is declared like a 'broadcast' list instead of a plain channel 
+ */ 
 index_gem = list()
-
-echo true
 
 task('index'){
 	input  inputFile
@@ -35,7 +37,7 @@ task('index'){
 t_gem = channel()
 t_keys = channel()
 
-task('t-index'){
+task('transcriptome-index'){
 	input index_gem
 	input annotationFile
         output '*.junctions.gem': t_gem
@@ -47,7 +49,7 @@ task('t-index'){
 }
 
 map = channel()
-bam = channel()
+bam = list()
 bam_index = channel()
 
 task('rna-pipeline'){
@@ -57,13 +59,13 @@ task('rna-pipeline'){
 	input  secondaryFile
         input  t_gem
         input  t_keys
-	input  quality
+
         output "*.map.gz": map
         output "*.bam": bam
         output "*.bam.bai": bam_index 
 	
 	"""	
-	gemtools rna-pipeline -i ${index_gem} -a ${annotationFile} -f ${primaryFile} ${secondaryFile} -r ${t_gem} -k ${t_keys} -t 1 -q ${quality} --name ${params.name}
+	gemtools rna-pipeline -i ${index_gem} -a ${annotationFile} -f ${primaryFile} ${secondaryFile} -r ${t_gem} -k ${t_keys} -t 1 -q ${params.quality} --name ${params.name}
 	"""
 }
 
