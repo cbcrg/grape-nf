@@ -28,7 +28,7 @@ task('index'){
 	output 'index.gem': index_gem
 
 	"""
-	gemtools index -i ${inputFile} -o index.gem -t 1 
+	gemtools index -i ${inputFile} -o index.gem -t 8 
 	"""        
 }
 
@@ -42,40 +42,55 @@ task('t-index'){
         output '*.junctions.keys': t_keys
 
 	"""	
-	gemtools t-index -i ${index_gem} -a ${annotationFile} -m 150 -t 1 
+	gemtools t-index -i ${index_gem} -a ${annotationFile} -m 150 -t 8 
 	"""
 }
 
 map = channel()
-bam = channel()
+bam = list()
 bam_index = channel()
 
 task('rna-pipeline'){
 	input  index_gem
+        input  t_gem
+        input  t_keys
 	input  annotationFile
 	input  primaryFile
 	input  secondaryFile
-        input  t_gem
-        input  t_keys
 	input  quality
         output "*.map.gz": map
         output "*.bam": bam
         output "*.bam.bai": bam_index 
 	
 	"""	
-	gemtools rna-pipeline -i ${index_gem} -a ${annotationFile} -f ${primaryFile} ${secondaryFile} -r ${t_gem} -k ${t_keys} -t 1 -q ${quality} --name ${params.name}
+	gemtools rna-pipeline -i ${index_gem} -a ${annotationFile} -f ${primaryFile} ${secondaryFile} -r ${t_gem} -k ${t_keys} -t 8 -q ${quality} --name ${params.name}
 	"""
 }
 
+transcripts = channel()
+isoforms = channel()
+genes = channel()
+
+task('cufflinks'){
+	input bam
+	output 'transcripts.gtf': transcripts
+	output 'isoforms.fpkm_tracking': isoforms
+	output 'genes.fpkm_tracking': genes
+
+	"""
+	cufflinks -p 8 ${bam} 
+	"""
+}
 
 quantification = channel()
 
 task('flux'){
 	input bam
+	input transcripts
 	input annotationFile
         output 'quantification.gtf': quantification
 
 	"""
-	flux-capacitor -i ${bam} -a ${annotationFile} -o quantification.gtf
+	flux-capacitor -i ${bam} -a ${annotationFile} -o quantification.gtf --threads 8
 	"""
 }
