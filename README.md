@@ -17,17 +17,21 @@ Make sure you have installed the required dependencies listed below, or just
 use the self-configured Vagrant VM. 
 
 
-When done, move in the project root folder just created `grape-nf`, 
-it contains an example dataset in the `tutorial` folder. 
+When done, move in the project root folder named `grape-nf`, 
+which contains an example dataset in the `tutorial` folder. 
 
-Launch the pipeline execution by entering the following command 
+Launch the pipeline by entering the following command 
 on your shell terminal:
 
     $ ./nextflow grape.nf
     
 
-Run into the Vagrant VM
------------------------
+By default the pipeline is executed against the provided tutorial dataset. 
+See the section *pipeline parameters* below to see how enter your data on the program command line.     
+    
+
+Run using Vagrant
+-----------------
 
 To avoid having to install all the pipeline dependencies, you may test the pipeline using 
 the provided Vagrant VM, which downloads and configures all the required pieces 
@@ -61,86 +65,77 @@ When finished, stop the VM using the command `vagrant halt` or `vagrant destroy`
 want temporary stop the execution or remove completely remove the VM. 
 
 
-Initial parameters
-------------------
+Pipeline parameters
+-------------------
 
-**--params.input**  
+**--genome**  
    
-* Specifies the position of the fasta file. 
+* The location of the genome multi-fasta file. 
 * It should end in '.fa' 
 * Involved in the task: index.
   * By default is set to the Grape-NF's localization: './tutorial/data/genome_1Mbp.fa'
-  `  $ ./nextflow grape.nf --params.input=/home/user/my_fastas/example.fa  `  
+  `  $ ./nextflow grape.nf --genome=/home/user/my_fastas/example.fa  `  
     
   
- 
-**--params.name** 
-   
-* Specifies the name for the files created during the process.  
-* Necessary for input/output coordination of files among the tasks.
-* Involved in the task: transcriptome-index, rna-pipeline, flux.
-  * By default is named: 'genome'  
-  `  $ ./nextflow grape.nf --params.name=genomics  `  
-  
 
-**--params.annotation** 
+**--annotation** 
    
-* Specifies the location of the annotation file.  
+* Specifies the location of the genome annotation file.  
 * The file must end in '.gtf'  
 * Involved in the task: transcriptome-index, rna-pipeline, flux.
   * By default is set to the Grape-NF'localization: './tutorial/data/annotation.gtf' 
-  `  $ ./nextflow grape.nf --params.annotation=/users/bm/notes.gtf  `  
+  `  $ ./nextflow grape.nf --annotation=/users/bm/notes.gtf  `  
 
   
-**--params.primary** 
+**--primary** 
    
-* Specifies the situation of the first file for the rna-pipeline.  
+* Specifies the location of the primary reads *fastq* file.  
 * It must end in '_1.fastq'.  
 * Involved in the task: rna-pipeline.
   * By default is set to the Grape-NF's location: './tutorial/data/test_1.fastq' 
-  `  $ ./nextflow grape.nf --params.primary=/home/ignacio/genome_1.fastq  `  
+  `  $ ./nextflow grape.nf --primary=/home/ignacio/genome_1.fastq  `  
   
   
-**--params.secondary** 
+**--secondary** 
    
-* Specifies the situation of the second file for the rna-pipeline.  
+* Specifies the situation of the secondary reads *fastq* file.  
 * It must end in '_2.fastq'.  
 * Involved in the task: rna-pipeline.  
   * By default is set to the Grape-NF's location: './tutorial/data/test_2.fastq' 
-  `  $ ./nextflow grape.nf --params.secondary=./example_2.fastq  `  
+  `  $ ./nextflow grape.nf --secondary=./example_2.fastq  `  
 
 
-**--params.quality** 
+**--quality** 
    
 * Sets the quality offset.  
 * It can be either 33 or 64  
 * Involved in the task: rna-pipeline.
   * By default is set to: 33.  
-  `  $ ./nextflow grape.nf --params.quality=64  `  
+  `  $ ./nextflow grape.nf --quality=64  `  
 
 
-**--params.threads** 
+**--cpus** 
    
-* Sets the number of threads used in every tasks. All of them will handle the same number.  
+* Sets the number of CPUs used in every tasks. All of them will handle the same number.  
 * It depends on the number of processors of your computer.  
 * Involved in the task: index, transcriptome-index, rna-pipeline, cufflinks, flux.
-  * By default is set to 8.  
-  `  $ ./nextflow grape.nf --params.threads=2  `  
+  * By default is set to the number of the available cores.  
+  `  $ ./nextflow grape.nf --cpus=2  `  
   
   
-**--params.output** 
+**--output** 
    
 * Specifies the folder where the results will be stored for the user.  
 * It does not matter if the folder does not exist.
-  * By default is set to Grape-NF's folder: './tutorial/results' 
-  `  $ ./nextflow grape.nf --params.output=/home/user/my_results  `  
+  * By default is set to Grape-NF's folder: './results' 
+  `  $ ./nextflow grape.nf --output=/home/user/my_results  `  
   
   
-**--params.echo** 
+**--echo** 
    
 * Enables or disables the tasks stdout print.
   * By default is set to true.  
-  `  $ ./nextflow grape.nf --params.echo=false  `  
+  `  $ ./nextflow grape.nf --echo=false  `  
   
   
 Dependencies 
