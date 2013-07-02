@@ -79,7 +79,7 @@ Initial parameters
 * Specifies the name for the files created during the process.  
 * Necessary for input/output coordination of files among the tasks.
 * Involved in the task: transcriptome-index, rna-pipeline, flux.
-  * By default is named: 'genome' 
+  * By default is named: 'genome'  
   `  $ ./nextflow grape.nf --params.name=genomics  `  
   
 
@@ -115,7 +115,7 @@ Initial parameters
 * Sets the quality offset.  
 * It can be either 33 or 64  
 * Involved in the task: rna-pipeline.
-  * By default is set to: 33. 
+  * By default is set to: 33.  
   `  $ ./nextflow grape.nf --params.quality=64  `  
 
 
@@ -139,7 +139,7 @@ Initial parameters
 **--params.echo** 
    
 * Enables or disables the tasks stdout print.
-  * By default is set to true.
+  * By default is set to true.  
   `  $ ./nextflow grape.nf --params.echo=false  `  
   
   
