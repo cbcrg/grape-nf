@@ -66,7 +66,8 @@ Initial parameters
 
 **--params.input**  
    
-* Specifies the position of the fasta file.  
+* Specifies the position of the fasta file. 
+* It should end in '.fa' 
 * It should end in '.fa'
 * Involved in the task: index.
     * By default is set to the Grape-NF's localization: './tutorial/data/genome_1Mbp.fa' 
