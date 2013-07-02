@@ -37,7 +37,7 @@ params.annotation  = './tutorial/data/annotation.gtf'
 params.primary     = './tutorial/data/test_1.fastq'
 params.secondary   = './tutorial/data/test_2.fastq'
 params.quality     = 33
-params.threads     = Runtime.getRuntime().availableProcessors()
+params.cpus     = Runtime.getRuntime().availableProcessors()
 params.output   = './results'
 
 
@@ -82,7 +82,7 @@ task('index'){
     output 'index.gem': index_gem
 
     """
-    gemtools index -i ${genome_file} -o index.gem -t ${params.threads}
+    gemtools index -i ${genome_file} -o index.gem -t ${params.cpus}
     """
 }
 
@@ -96,7 +96,7 @@ task('transcriptome-index'){
     output '*.junctions.keys': t_keys
 
     """
-    gemtools t-index -i ${index_gem} -a ${annotation_file} -m 150 -t ${params.threads}
+    gemtools t-index -i ${index_gem} -a ${annotation_file} -m 150 -t ${params.cpus}
     """
 }
 
@@ -117,7 +117,7 @@ task('rna-pipeline'){
     output "*.bam.bai": bam_index
 
     """
-    gemtools rna-pipeline -i ${index_gem} -a ${annotation_file} -f ${primary_reads_file} ${secondary_reads_file} -r ${t_gem} -k ${t_keys} -t ${params.threads}  -q ${params.quality} --name ${params.name}
+    gemtools rna-pipeline -i ${index_gem} -a ${annotation_file} -f ${primary_reads_file} ${secondary_reads_file} -r ${t_gem} -k ${t_keys} -t ${params.cpus}  -q ${params.quality} --name ${params.name}
     """
 }
 
@@ -133,7 +133,7 @@ task('cufflinks'){
     output 'genes.fpkm_tracking': genes
 
     """
-    cufflinks -p ${params.threads} ${bam}
+    cufflinks -p ${params.cpus} ${bam}
     """
 }
 
@@ -146,7 +146,7 @@ task('flux'){
     output 'quantification.gtf': quantification
 
     """
-    flux-capacitor -i ${bam} -a ${annotation_file} -o quantification.gtf --threads ${params.threads}
+    flux-capacitor -i ${bam} -a ${annotation_file} -o quantification.gtf --threads ${params.cpus}
     """
 }
 
@@ -160,6 +160,6 @@ transcripts.val.copyTo(out_transcripts)
 quantification.val.copyTo(out_quantification)
 
 
-log.info "Flux quantification file: ${out_quantification}"
-log.info "Cufflink transcripts file: ${out_transcripts}"
+log.info "* Flux quantification file: ${out_quantification}"
+log.info "* Cufflink transcripts file: ${out_transcripts}"
 
