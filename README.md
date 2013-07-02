@@ -68,7 +68,6 @@ Initial parameters
    
 * Specifies the position of the fasta file. 
 * It should end in '.fa' 
-* It should end in '.fa'
 * Involved in the task: index.
     * By default is set to the Grape-NF's localization: './tutorial/data/genome_1Mbp.fa' 
 
@@ -79,7 +78,7 @@ Initial parameters
 **--params.name** 
    
 * Specifies the name for the files created during the process.  
-* Necessary for input/output coordination of files among the tasks.  
+* Necessary for input/output coordination of files among the tasks.
 * Involved in the task: transcriptome-index, rna-pipeline, flux.  
     * By default is named: 'genome' 
 
