@@ -124,7 +124,7 @@ Initial parameters
 * Sets the number of threads used in every tasks. All of them will handle the same number.  
 * It depends on the number of processors of your computer.  
 * Involved in the task: index, transcriptome-index, rna-pipeline, cufflinks, flux.
-  * By default is set to 8. 
+  * By default is set to 8.  
   `  $ ./nextflow grape.nf --params.threads=2  `  
   
   
@@ -139,7 +139,7 @@ Initial parameters
 **--params.echo** 
    
 * Enables or disables the tasks stdout print.
-  * By default is set to true. 
+  * By default is set to true.
   `  $ ./nextflow grape.nf --params.echo=false  `  
   
   
