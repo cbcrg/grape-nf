@@ -78,9 +78,8 @@ Initial parameters
    
 * Specifies the name for the files created during the process.  
 * Necessary for input/output coordination of files among the tasks.
-* Involved in the task: transcriptome-index, rna-pipeline, flux.  
-    * By default is named: 'genome' 
-
+* Involved in the task: transcriptome-index, rna-pipeline, flux.
+  * By default is named: 'genome' 
   `  $ ./nextflow grape.nf --params.name=genomics  `  
   
 
@@ -88,9 +87,8 @@ Initial parameters
    
 * Specifies the location of the annotation file.  
 * The file must end in '.gtf'  
-* Involved in the task: transcriptome-index, rna-pipeline, flux.  
-    * By default is set to the Grape-NF'localization: './tutorial/data/annotation.gtf' 
-
+* Involved in the task: transcriptome-index, rna-pipeline, flux.
+  * By default is set to the Grape-NF'localization: './tutorial/data/annotation.gtf' 
   `  $ ./nextflow grape.nf --params.annotation=/users/bm/notes.gtf  `  
 
   
@@ -98,9 +96,8 @@ Initial parameters
    
 * Specifies the situation of the first file for the rna-pipeline.  
 * It must end in '_1.fastq'.  
-* Involved in the task: rna-pipeline.  
-    * By default is set to the Grape-NF's location: './tutorial/data/test_1.fastq' 
-
+* Involved in the task: rna-pipeline.
+  * By default is set to the Grape-NF's location: './tutorial/data/test_1.fastq' 
   `  $ ./nextflow grape.nf --params.primary=/home/ignacio/genome_1.fastq  `  
   
   
@@ -110,7 +107,6 @@ Initial parameters
 * It must end in '_2.fastq'.  
 * Involved in the task: rna-pipeline.  
   * By default is set to the Grape-NF's location: './tutorial/data/test_2.fastq' 
-
   `  $ ./nextflow grape.nf --params.secondary=./example_2.fastq  `  
 
 
@@ -118,9 +114,8 @@ Initial parameters
    
 * Sets the quality offset.  
 * It can be either 33 or 64  
-* Involved in the task: rna-pipeline.  
-    * By default is set to: 33. 
-
+* Involved in the task: rna-pipeline.
+  * By default is set to: 33. 
   `  $ ./nextflow grape.nf --params.quality=64  `  
 
 
@@ -128,26 +123,23 @@ Initial parameters
    
 * Sets the number of threads used in every tasks. All of them will handle the same number.  
 * It depends on the number of processors of your computer.  
-* Involved in the task: index, transcriptome-index, rna-pipeline, cufflinks, flux.  
-    * By default is set to 8. 
-
+* Involved in the task: index, transcriptome-index, rna-pipeline, cufflinks, flux.
+  * By default is set to 8. 
   `  $ ./nextflow grape.nf --params.threads=2  `  
   
   
 **--params.output** 
    
 * Specifies the folder where the results will be stored for the user.  
-* It does not matter if the folder does not exist.  
-    * By default is set to Grape-NF's folder: './tutorial/results' 
-
+* It does not matter if the folder does not exist.
+  * By default is set to Grape-NF's folder: './tutorial/results' 
   `  $ ./nextflow grape.nf --params.output=/home/user/my_results  `  
   
   
 **--params.echo** 
    
-* Enables or disables the tasks stdout print.  
-    * By default is set to true. 
-
+* Enables or disables the tasks stdout print.
+  * By default is set to true. 
   `  $ ./nextflow grape.nf --params.echo=false  `  
   
   
