@@ -72,7 +72,7 @@ Initial parameters
 * Involved in the task: index.  
     * By default is set to the Grape-NF's localization: './tutorial/data/genome_1Mbp.fa' 
 
-    $ ./nextflow grape.nf --params.input=/home/user/my_fastas/example.fa  
+	 $ ./nextflow grape.nf --params.input=/home/user/my_fastas/example.fa  
     
   
  
