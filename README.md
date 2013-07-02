@@ -65,8 +65,7 @@ Initial parameters
 ------------------
 
 **--params.input**  
-  
- 
+   
 * Specifies the position of the fasta file.  
 * It should end in '.fa'
 * Involved in the task: index.
@@ -77,8 +76,7 @@ Initial parameters
   
  
 **--params.name** 
-  
- 
+   
 * Specifies the name for the files created during the process.  
 * Necessary for input/output coordination of files among the tasks.  
 * Involved in the task: transcriptome-index, rna-pipeline, flux.  
@@ -88,8 +86,7 @@ Initial parameters
   
 
 **--params.annotation** 
-  
- 
+   
 * Specifies the location of the annotation file.  
 * The file must end in '.gtf'  
 * Involved in the task: transcriptome-index, rna-pipeline, flux.  
@@ -99,8 +96,7 @@ Initial parameters
 
   
 **--params.primary** 
-  
- 
+   
 * Specifies the situation of the first file for the rna-pipeline.  
 * It must end in '_1.fastq'.  
 * Involved in the task: rna-pipeline.  
@@ -110,8 +106,7 @@ Initial parameters
   
   
 **--params.secondary** 
-  
- 
+   
 * Specifies the situation of the second file for the rna-pipeline.  
 * It must end in '_2.fastq'.  
 * Involved in the task: rna-pipeline.  
@@ -121,10 +116,9 @@ Initial parameters
 
 
 **--params.quality** 
-  
- 
+   
 * Sets the quality offset.  
-* It can be either 33 or 64.  
+* It can be either 33 or 64  
 * Involved in the task: rna-pipeline.  
     * By default is set to: 33. 
 
@@ -132,8 +126,7 @@ Initial parameters
 
 
 **--params.threads** 
-  
- 
+   
 * Sets the number of threads used in every tasks. All of them will handle the same number.  
 * It depends on the number of processors of your computer.  
 * Involved in the task: index, transcriptome-index, rna-pipeline, cufflinks, flux.  
@@ -143,8 +136,7 @@ Initial parameters
   
   
 **--params.output** 
-  
- 
+   
 * Specifies the folder where the results will be stored for the user.  
 * It does not matter if the folder does not exist.  
     * By default is set to Grape-NF's folder: './tutorial/results' 
@@ -153,8 +145,7 @@ Initial parameters
   
   
 **--params.echo** 
-  
- 
+   
 * Enables or disables the tasks stdout print.  
     * By default is set to true. 
 
