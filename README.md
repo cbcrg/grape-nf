@@ -27,7 +27,7 @@ on your shell terminal:
     
 
 By default the pipeline is executed against the provided tutorial dataset. 
-See the section *pipeline parameters* below to see how enter your data on the program command line.     
+Check the *Pipeline parameters*  section below to see how enter your data on the program command line.     
     
 
 Run using Vagrant
@@ -38,13 +38,9 @@ the provided Vagrant VM, which downloads and configures all the required pieces
 of software for you. See http://www.vagrantup.com for more details about Vagrant.
 
 The Vagrant environment uses the Ubuntu Precise 64 virtual machine, if you don't have it 
-in your Vagrant boxes list, just add it with the following command: 
+in your Vagrant boxes list, it will be downloaded automatically. 
 
-    $ vagrant box add precise64 http://files.vagrantup.com/precise64.box 
-    
-
-When done, move in the pipeline root folder `grape-nf` and enter the following command
-to launch the VM:
+To launch the VM move to the pipeline root folder `grape-nf` and enter the following command:
   
     $ vagrant up 
 
