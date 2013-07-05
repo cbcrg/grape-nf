@@ -94,7 +94,7 @@ Pipeline parameters
   
 **--secondary** 
    
-* Specifies the situation of the secondary reads *fastq* file.  
+* Specifies the location of the secondary reads *fastq* file.  
 * It must end in '_2.fastq'.  
 * Involved in the task: rna-pipeline.  
   * By default is set to the Grape-NF's location: './tutorial/data/test_2.fastq' 
