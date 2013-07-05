@@ -58,7 +58,7 @@ Now you can launch the pipeline as shown:
 
 
 When finished, stop the VM using the command `vagrant halt` or `vagrant destroy`, depending if you
-want temporary stop the execution or remove completely remove the VM. 
+want to temporary stop the execution or delete permanently the VM with all its files. 
 
 
 Pipeline parameters
