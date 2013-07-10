@@ -53,7 +53,11 @@ install() {
 
 } 
 
+# Exit if already bootstrapped.
+test -f /etc/bootstrapped && exit
 
 export -f install
 su vagrant -c 'install'
 
+# Mark as bootstrapped 
+date > /etc/bootstrapped
