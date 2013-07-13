@@ -40,6 +40,10 @@ params.quality     = 33
 params.cpus        = 1
 params.output      = './results'
 
+/* 
+ * Enable/disable GEM debugging information. Valid values: error, warn, info, debug 
+ */ 
+params.loglevel = 'warn'
 
 /* 
  * Enable/disable tasks stdout print 
@@ -82,7 +86,7 @@ task('index'){
     output 'index.gem': index_gem
 
     """
-    gemtools index -i ${genome_file} -o index.gem -t ${params.cpus}
+    gemtools --loglevel ${params.loglevel} index -i ${genome_file} -o index.gem -t ${params.cpus}
     """
 }
 
@@ -96,7 +100,7 @@ task('transcriptome-index'){
     output '*.junctions.keys': t_keys
 
     """
-    gemtools t-index -i ${index_gem} -a ${annotation_file} -m 150 -t ${params.cpus}
+    gemtools --loglevel ${params.loglevel} t-index -i ${index_gem} -a ${annotation_file} -m 150 -t ${params.cpus}
     """
 }
 
@@ -117,7 +121,7 @@ task('rna-pipeline'){
     output "*.bam.bai": bam_index
 
     """
-    gemtools rna-pipeline -i ${index_gem} -a ${annotation_file} -f ${primary_reads_file} ${secondary_reads_file} -r ${t_gem} -k ${t_keys} -t ${params.cpus}  -q ${params.quality} --name ${params.name}
+    gemtools --loglevel ${params.loglevel} rna-pipeline -i ${index_gem} -a ${annotation_file} -f ${primary_reads_file} ${secondary_reads_file} -r ${t_gem} -k ${t_keys} -t ${params.cpus}  -q ${params.quality} --name ${params.name}
     """
 }
 
