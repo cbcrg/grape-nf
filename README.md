@@ -134,6 +134,12 @@ Pipeline parameters
   `  $ ./nextflow grape.nf --echo=false  `  
   
   
+**--loglevel** 
+   
+* Enable/disable GEM debugging information.
+  * Valid values are: error, warn, info, debug .  
+  `  $ ./nextflow grape.nf --logevel=debug  `    
+  
 Dependencies 
 ------------
 
