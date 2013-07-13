@@ -31,14 +31,14 @@
  */
 
 
-params.genome       = './tutorial/data/genome_1Mbp.fa'
+params.genome      = './tutorial/data/genome_1Mbp.fa'
 params.name        = 'genome'
 params.annotation  = './tutorial/data/annotation.gtf'
 params.primary     = './tutorial/data/test_1.fastq'
 params.secondary   = './tutorial/data/test_2.fastq'
 params.quality     = 33
-params.cpus     = Runtime.getRuntime().availableProcessors()
-params.output   = './results'
+params.cpus        = 1
+params.output      = './results'
 
 
 /* 
