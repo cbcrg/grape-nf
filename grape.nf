@@ -86,7 +86,7 @@ task('index'){
     output 'index.gem': index_gem
 
     """
-    gemtools --loglevel ${params.loglevel} index -i ${genome_file} -o index.gem -t ${params.cpus}
+    gemtools --loglevel ${params.loglevel} index -i ${genome_file} -o index.gem -t ${params.cpus} --no-hash
     """
 }
 
