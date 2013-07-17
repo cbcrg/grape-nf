@@ -30,7 +30,7 @@ install() {
   #
   # Install GEM 
   # 
-  wget -q http://barnaserver.com/gemtools/releases/GEMTools-static-core2-1.6.1.tar.gz
+  wget -q http://barnaserver.com/gemtools/releases/GEMTools-static-core2-1.6.2.tar.gz
   tar xf GEMTools-static-core2-1.6.1.tar.gz
   printf '\n\nexport PATH=$HOME/gemtools-1.6.1-core2/bin:$PATH\n' >> ~/.profile
 
