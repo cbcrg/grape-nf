@@ -145,6 +145,8 @@ task('rna-pipeline'){
     output "*.map.gz": map
     output "*.bam": bam
 
+    scratch false
+
     """
     gemtools --loglevel ${params.loglevel} rna-pipeline \\
         -i ${index_gem_file} \\
@@ -156,13 +158,15 @@ task('rna-pipeline'){
         -q ${params.quality} \\
         --name ${params.name}_${read_names}
 
-    # Create a link to the created BAM files into the result folder
+    # Move the BAM/BAI files to the result folder
     BAM=${params.name}_${read_names}.bam
     BAI=${params.name}_${read_names}.bam.bai
-    cd ${result_path}
-    rm -f \$BAM && ln -s \$OLDPWD/\$BAM
-    rm -f \$BAI && ln -s \$OLDPWD/\$BAI
-    cd -
+    rm -f ${result_path}/\$BAM
+    rm -f ${result_path}/\$BAI
+    mv \$BAM ${result_path}/\$BAM
+    mv \$BAI ${result_path}/\$BAI
+    ln -s ${result_path}/\$BAM
+    ln -s ${result_path}/\$BAI
     """
 }
 
