@@ -18,7 +18,7 @@
  *   You should have received a copy of the GNU General Public License
  *   along with Grape-NF.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+import org.apache.commons.lang.StringUtils
 
 /* 
  * Main Grape-NF pipeline script
@@ -39,17 +39,7 @@ params.secondary   = './tutorial/data/test_2.fastq'
 params.quality     = 33
 params.cpus        = 1
 params.output      = './results'
-
-/* 
- * Enable/disable GEM debugging information. Valid values: error, warn, info, debug 
- */ 
 params.loglevel = 'warn'
-
-/* 
- * Enable/disable tasks stdout print 
- */
-params.echo = true
-echo params.echo
 
 
 /*
@@ -58,28 +48,60 @@ echo params.echo
 
 File genome_file = file(params.genome)
 File annotation_file = file(params.annotation)
-File primary_reads_file = file(params.primary)
-File secondary_reads_file = file(params.secondary)
-File resultPath = file(params.output)
+File result_path = file(params.output)
+primary_reads = findReads(params.primary?.toString())
+secondary_reads = findReads(params.secondary?.toString())
 
+/*
+ * validate input files
+ */
 if( !genome_file.exists() ) exit 1, "Missing genome file: ${genome_file}"
 if( !annotation_file.exists() ) exit 2, "Missing annotatio file: ${annotation_file}"
-if( !primary_reads_file.exists() ) exit 3, "Missing primary reads file: ${primary_reads_file}"
-if( !secondary_reads_file.exists() ) exit 4, "Missing secondary file: ${secondary_reads_file}"
 
-if( resultPath.isNotEmpty() ) resultPath.deleteDir()
-if( !resultPath.exists() ) resultPath.mkdirs()
-if( !resultPath.exists() ) exit 5, "Cannot create output folder: $resultPath -- Check file system access permission"
+if( !result_path.exists() && !result_path.mkdirs() ) {
+    exit 3, "Cannot create output folder: $result_path -- Check file system access permission"
+}
 
 
+/*
+ * validate read pairs
+ */
+
+read_names = []
+
+len = primary_reads.size()
+if ( len == 0 ) exit 4, "You have specified an empty read pairs sets -- primary ${params.primary} ~ secodary: ${params.secondary} "
+if ( len != secondary_reads.size() ) exit 5, "Primary and secondary read pairs do not match"
+
+if( len == 1 ) {
+    if ( !primary_reads[0].exists() ) exit 6, "Primary read file do not exist: ${params.primary}"
+    if ( !secondary_reads[0].exists() ) exit 6, "Secondary read file do not exist: ${params.secondary}"
+
+    def (name, err) = bestMatch( primary_reads[0], secondary_reads[0] )
+    if ( err ) exit 7, err
+    read_names << name
+
+}
+else {
+    for( int i=0; i<len; i++ ) {
+        def (name, err) = bestMatch( primary_reads[i], secondary_reads[i], false )
+        if ( err ) { exit 8, err }
+        if ( read_names.contains(name) ) exit 9, "Duplicate read pair name in you dataset: '$name'"
+        read_names << name
+    }
+}
+
+log.info "Read pairs: $read_names"
+log.debug "Primary reads: ${primary_reads *. name }"
+log.debug "Secondary reads: ${secondary_reads *. name }"
 
 /* 
- * Since the GEM index is going to be provided as input of both tasks 'transcriptome-index' and 'rna-pipeline'
+ * Since the GEM index is going to be provided as input of both tasks 'transcript-index' and 'rna-pipeline'
  * it is declared like a 'broadcast' list instead of a plain channel 
  */ 
 
 
-index_gem = list()
+index_gem = channel()
 
 task('index'){
     input genome_file
@@ -90,54 +112,79 @@ task('index'){
     """
 }
 
+index_gem_file = read(index_gem)
 
 t_gem  = channel()
 t_keys = channel()
 
-task('transcriptome-index'){
-    input index_gem
+task('transcript-index'){
+    input index_gem_file
     output '*.junctions.gem': t_gem
     output '*.junctions.keys': t_keys
 
     """
-    gemtools --loglevel ${params.loglevel} t-index -i ${index_gem} -a ${annotation_file} -m 150 -t ${params.cpus}
+    gemtools --loglevel ${params.loglevel} t-index -i ${index_gem_file} -a ${annotation_file} -m 150 -t ${params.cpus}
     """
 }
 
 
-bam       = list()
+bam       = channel()
 map       = channel()
-bam_index = channel()
+t_gem_file = read(t_gem)
+t_keys_file = read(t_keys)
 
 task('rna-pipeline'){
-    input index_gem
     input annotation_file
-    input primary_reads_file
-    input secondary_reads_file
-    input  t_gem
-    input  t_keys
+    input read_names
+    input primary_reads
+    input secondary_reads
+    input index_gem_file
+    input t_gem_file
+    input t_keys_file
+    
     output "*.map.gz": map
     output "*.bam": bam
-    output "*.bam.bai": bam_index
 
     """
-    gemtools --loglevel ${params.loglevel} rna-pipeline -i ${index_gem} -a ${annotation_file} -f ${primary_reads_file} ${secondary_reads_file} -r ${t_gem} -k ${t_keys} -t ${params.cpus}  -q ${params.quality} --name ${params.name}
+    gemtools --loglevel ${params.loglevel} rna-pipeline \\
+        -i ${index_gem_file} \\
+        -a ${annotation_file} \\
+        -f ${primary_reads} ${secondary_reads} \\
+        -r ${t_gem_file} \\
+        -k ${t_keys_file} \\
+        -t ${params.cpus} \\
+        -q ${params.quality} \\
+        --name ${params.name}_${read_names}
+
+    # Create a link to the created BAM files into the result folder
+    BAM=${params.name}_${read_names}.bam
+    BAI=${params.name}_${read_names}.bam.bai
+    cd ${result_path}
+    rm -f \$BAM && ln -s \$OLDPWD/\$BAM
+    rm -f \$BAI && ln -s \$OLDPWD/\$BAI
+    cd -
     """
 }
 
 
 transcripts = channel()
-isoforms    = channel()
-genes       = channel()
+bam1 = channel()
+bam2 = channel()
+splitter ( bam, [bam2, bam1] )
 
 task('cufflinks'){
-    input bam
-    output 'transcripts.gtf': transcripts
-    output 'isoforms.fpkm_tracking': isoforms
-    output 'genes.fpkm_tracking': genes
+    input bam1
+    output '*.transcripts.gtf': transcripts
 
     """
-    cufflinks -p ${params.cpus} ${bam}
+    # Extract the file name w/o the extension
+    fileName=\$(basename "${bam1}")
+    baseName="\${fileName%.*}"
+
+    cufflinks -p ${params.cpus} ${bam1}
+
+    # rename to target name including the 'bam' name
+    mv transcripts.gtf \$baseName.transcripts.gtf
     """
 }
 
@@ -145,25 +192,131 @@ task('cufflinks'){
 quantification = channel()
 
 task('flux'){
-    input bam
+    input bam2
     input annotation_file
-    output 'quantification.gtf': quantification
+    output '*.quantification.gtf': quantification
 
     """
-    flux-capacitor -i ${bam} -a ${annotation_file} -o quantification.gtf --threads ${params.cpus}
+    # Extract the file name w/o the extension
+    fileName=\$(basename "${bam2}")
+    baseName="\${fileName%.*}"
+
+    flux-capacitor -i ${bam2} -a ${annotation_file} -o \$baseName.quantification.gtf --threads ${params.cpus}
     """
 }
+
 
 /*
  * producing output files
  */
-out_transcripts = new File(resultPath, 'transcripts.gtf')
-out_quantification = new File(resultPath, 'quantification.gtf')
-
-transcripts.val.copyTo(out_transcripts)
-quantification.val.copyTo(out_quantification)
+quantification.each { File it -> copyToResults(it, result_path) }
+transcripts.each { File it -> copyToResults(it, result_path) }
 
 
-log.info "* Flux quantification file: ${out_quantification}"
-log.info "* Cufflink transcripts file: ${out_transcripts}"
+// ===================== UTILITY FUNCTIONS ============================
 
+
+/*
+ * Copy the 'source' file to the result folder.
+ * Note: when a file with the same name as the target already exists, it will be deleted
+ */
+def copyToResults( File source, File resultPath )  {
+    def target = new File(resultPath, source.name);
+    log.info "Copying file to results: ${target}"
+
+    if(target.exists()) { target.delete()  }
+    source.copyTo(target)
+}
+
+
+/*
+ * Given a path returns a sorted list files matching it.
+ * The path can contains wildcards characters '*' and '?'
+ */
+def List<File> findReads( String fileName ) {
+    def result = []
+    if( fileName.contains('*') || fileName.contains('?') ) {
+        def path = new File(fileName).absoluteFile
+        def parent = path.parentFile
+        def filePattern = path.name.replace("?", ".?").replace("*", ".*?")
+        parent.eachFileMatch(~/$filePattern/) { result << it }
+        result = result.sort()
+    }
+    else {
+        result << new File(fileName).absoluteFile
+    }
+
+    return result
+}
+
+def bestMatch( File file1, File file2, boolean singlePair = true) {
+    bestMatch( file1.baseName, file2.baseName, singlePair )
+}
+
+def bestMatch( String n1, String n2, boolean singlePair = true) {
+
+    def index = StringUtils.indexOfDifference(n1, n2)
+
+    if( !singlePair ) {
+        if( index == -1 ) {
+            // this mean the two file names are identical, something is wrong
+            return [null, "Missing entry for read pair: '$n1'"]
+        }
+        else if( index == 0 ) {
+            // this mean the two file names are completely different
+            return [null, "Not a valid read pair -- primary: $n1 ~ secondary: $n2"]
+        }
+    }
+
+    String match = index ? n1.subSequence(0,index) : n1
+    match = trimReadName(match)
+    if( !match ) {
+        return [null, "Missing common name for read pair -- primary: $n1 ~ secondary: $n2 "]
+    }
+
+    return [match, null]
+
+}
+
+def trimReadName( String name ) {
+    name.replaceAll(/^[^a-zA-Z]*/,'').replaceAll(/[^a-zA-Z]*$/,'')
+}
+
+
+// ===================== UNIT TESTS ============================
+
+def testFindReads() {
+
+    def path = File.createTempDir()
+    try {
+        def file1 = new File(path, 'alpha_1.fastq'); file1.text = 'file1'
+        def file2 = new File(path, 'alpha_2.fastq'); file2.text = 'file2'
+        def file3 = new File(path, 'gamma_1.fastq'); file3.text = 'file3'
+        def file4 = new File(path, 'gamma_2.fastq'); file4.text = 'file4'
+
+        assert findReads("$path/alpha_1.fastq") == [file1]
+        assert findReads("$path/*_1.fastq") == [file1, file3]
+        assert findReads("$path/*_2.fastq") == [file2, file4]
+    }
+    finally {
+        path.deleteDir()
+    }
+
+}
+
+def testTrimReadName() {
+    assert trimReadName('abc') == 'abc'
+    assert trimReadName('a_b_c__') == 'a_b_c'
+    assert trimReadName('__a_b_c__') == 'a_b_c'
+}
+
+def testBestMach() {
+
+    assert bestMatch('abc_1', 'abc_2') == ['abc', null]
+    assert bestMatch('aaa', 'bbb') == ['aaa', null]
+    assert bestMatch('_', 'bbb') == [null, "Missing common name for read pair -- primary: _ ~ secondary: bbb "]
+
+    assert bestMatch('abc_1', 'abc_2', false) == ['abc', null]
+    assert bestMatch('aaa', 'bbb', false) == [null, 'Not a valid read pair -- primary: aaa ~ secondary: bbb' ]
+
+}
