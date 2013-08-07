@@ -36,8 +36,9 @@ params.name        = 'genome'
 params.annotation  = './tutorial/data/annotation.gtf'
 params.primary     = './tutorial/data/test_1.fastq'
 params.secondary   = './tutorial/data/test_2.fastq'
+params.mapperStrategy = 'gem'
 params.quality     = 33
-params.cpus        = 1
+params.cpus        = Runtime.getRuntime().availableProcessors()
 params.output      = './results'
 
 /* 
@@ -80,18 +81,19 @@ if( !resultPath.exists() ) exit 5, "Cannot create output folder: $resultPath -- 
 
 
 index_gem = list()
+index_tophat = list()
 
 task('index'){
     input genome_file
-    output 'index.gem': index_gem
-
+    
+    output 'index.gem.1*': index_gem
+        
     """
-    gemtools --loglevel ${params.loglevel} index -i ${genome_file} -o index.gem -t ${params.cpus} --no-hash
+    x-index.sh ${params.mapperStrategy} ${genome_file} ${params.cpus} ${params.loglevel}
     """
 }
 
-
-t_gem  = channel()
+/*t_gem  = channel()
 t_keys = channel()
 
 task('transcriptome-index'){
@@ -101,27 +103,28 @@ task('transcriptome-index'){
 
     """
     gemtools --loglevel ${params.loglevel} t-index -i ${index_gem} -a ${annotation_file} -m 150 -t ${params.cpus}
-    """
-}
+    """	
+}*/
+
 
 
 bam       = list()
-map       = channel()
-bam_index = channel()
 
 task('rna-pipeline'){
     input index_gem
     input annotation_file
     input primary_reads_file
     input secondary_reads_file
-    input  t_gem
-    input  t_keys
-    output "*.map.gz": map
-    output "*.bam": bam
-    output "*.bam.bai": bam_index
 
-    """
-    gemtools --loglevel ${params.loglevel} rna-pipeline -i ${index_gem} -a ${annotation_file} -f ${primary_reads_file} ${secondary_reads_file} -r ${t_gem} -k ${t_keys} -t ${params.cpus}  -q ${params.quality} --name ${params.name}
+   /* input  t_gem
+    input  t_keys*/
+
+    output "*.bam": bam
+
+    """  
+    echo ${params.name}
+    x-mapper.sh ${params.mapperStrategy} ${index_gem} ${annotation_file} ${primary_reads_file} ${secondary_reads_file} ${params.name} ${params.quality} ${params.cpus} ${params.loglevel} ${bam} 
+#${t_gem} ${t_keys}
     """
 }
 
