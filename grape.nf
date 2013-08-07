@@ -36,11 +36,25 @@ params.name        = 'genome'
 params.annotation  = './tutorial/data/annotation.gtf'
 params.primary     = './tutorial/data/test_1.fastq.gz'
 params.secondary   = './tutorial/data/test_2.fastq.gz'
-params.mapperStrategy = 'gem'
+params.mapper      = 'gem'
 params.quality     = 33
 params.cpus        = 1
 params.output      = './results'
-params.loglevel = 'warn'
+
+
+log.info "G R A P E - N F  ~  version 1.2"
+log.info "==============================="
+log.info "name               : ${params.name}"
+log.info "genome             : ${params.genome}"
+log.info "annotation         : ${params.annotation}"
+log.info "primary            : ${params.primary}"
+log.info "secondary          : ${params.secondary}"
+log.info "quality            : ${params.quality}"
+log.info "output             : ${params.output}"
+log.info "mapper             : ${params.mapper}"
+log.info "cpu                : ${params.cpus}"
+log.info "poolSize           : ${config.poolSize}"
+log.info "\n"
 
 
 /*
@@ -101,35 +115,31 @@ log.debug "Secondary reads: ${secondary_reads *. name }"
  * it is declared like a 'broadcast' list instead of a plain channel 
  */ 
 
-index_gem = channel()
+index = channel()
 
 task('index'){
     input genome_file
-    
-    output 'index.gem': index_gem
+    output 'genome.index': index
         
     """
-    x-index.sh ${params.mapperStrategy} ${genome_file} ${params.cpus} ${params.loglevel}
+    x-index.sh ${params.mapper} ${genome_file} genome.index ${params.cpus}
     """
 }
 
-index_gem_file = read(index_gem)
-
-bam       = channel()
+index_file = read(index)
+bam = channel()
 
 task('rna-pipeline'){
     input annotation_file
     input read_names
     input primary_reads
     input secondary_reads
-    input index_gem_file
-    
+    input index_file
     output "*.bam": bam
-
     scratch false
 
     """
-    x-mapper.sh ${params.mapperStrategy} ${index_gem_file} ${annotation_file} ${primary_reads} ${secondary_reads} ${params.name}_${read_names} ${params.quality} ${params.cpus} ${result_path} ${params.loglevel} 
+    x-mapper.sh ${params.mapper} ${index_file} ${annotation_file} ${primary_reads} ${secondary_reads} '${result_path}/${params.name}_${read_names}' ${params.quality} ${params.cpus}
     """
 }
 

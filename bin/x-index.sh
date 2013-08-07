@@ -1,30 +1,34 @@
 #!/bin/bash
 
 #
-# A generic wrapper for genetating the index file
+# A generic wrapper for generating the index file
 #
 # It takes as input a genome file and generates the index file
 #
 # CLI Parameters:
-# - $1: The genome FASTA file to format
-# - $2: The number of threads
-# - $3: The loglevel
+# - $1: The mapping tool used
+# - $2: The genome FASTA file to format
+# - $3: The output index name
+# - $4: The number of threads
 
 set -e
 set -u
 
 GENOME=${2}
-CPUS=${3}
-LOGLEVEL=${4}
+INDEX=${3}
+CPUS=${4}
 
 case "$1" in
 'gem')
-gemtools --loglevel ${LOGLEVEL} index -i ${GENOME} -o index.gem -t ${CPUS} --no-hash
+gemtools index -i ${GENOME} -o index.gem -t ${CPUS} --no-hash
+mv index.gem ${INDEX}
 ;;
 
 'tophat2')
-bowtie2-build ${GENOME} index.gem
-touch index.gem
+bowtie2-build ${GENOME} ${INDEX}
+# note: bowtie returns multiples files prefixed with the specified 'INDEX' name
+# but we need to return a single file, for this reason a empty file named $INDEX is created
+touch ${INDEX}
 ;;
 
 *) echo "Not a valid indexer strategy: $1"; exit 1
