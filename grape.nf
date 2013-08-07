@@ -36,6 +36,7 @@ params.name        = 'genome'
 params.annotation  = './tutorial/data/annotation.gtf'
 params.primary     = './tutorial/data/test_1.fastq.gz'
 params.secondary   = './tutorial/data/test_2.fastq.gz'
+params.mapperStrategy = 'gem'
 params.quality     = 33
 params.cpus        = 1
 params.output      = './results'
@@ -100,37 +101,21 @@ log.debug "Secondary reads: ${secondary_reads *. name }"
  * it is declared like a 'broadcast' list instead of a plain channel 
  */ 
 
-
 index_gem = channel()
 
 task('index'){
     input genome_file
+    
     output 'index.gem': index_gem
-
+        
     """
-    gemtools --loglevel ${params.loglevel} index -i ${genome_file} -o index.gem -t ${params.cpus} --no-hash
+    x-index.sh ${params.mapperStrategy} ${genome_file} ${params.cpus} ${params.loglevel}
     """
 }
 
 index_gem_file = read(index_gem)
 
-t_gem  = channel()
-t_keys = channel()
-
-task('transcript-index'){
-    input index_gem_file
-    output '*.junctions.gem': t_gem
-    output '*.junctions.keys': t_keys
-
-    """
-    gemtools --loglevel ${params.loglevel} t-index -i ${index_gem_file} -a ${annotation_file} -m 150 -t ${params.cpus}
-    """
-}
-
-
 bam       = channel()
-t_gem_file = read(t_gem)
-t_keys_file = read(t_keys)
 
 task('rna-pipeline'){
     input annotation_file
@@ -138,33 +123,13 @@ task('rna-pipeline'){
     input primary_reads
     input secondary_reads
     input index_gem_file
-    input t_gem_file
-    input t_keys_file
     
     output "*.bam": bam
 
     scratch false
 
     """
-    gemtools --loglevel ${params.loglevel} rna-pipeline \\
-        -i ${index_gem_file} \\
-        -a ${annotation_file} \\
-        -f ${primary_reads} ${secondary_reads} \\
-        -r ${t_gem_file} \\
-        -k ${t_keys_file} \\
-        -t ${params.cpus} \\
-        -q ${params.quality} \\
-        --name ${params.name}_${read_names}
-
-    # Move the BAM/BAI files to the result folder
-    BAM=${params.name}_${read_names}.bam
-    BAI=${params.name}_${read_names}.bam.bai
-    rm -f ${result_path}/\$BAM
-    rm -f ${result_path}/\$BAI
-    mv \$BAM ${result_path}/\$BAM
-    mv \$BAI ${result_path}/\$BAI
-    ln -s ${result_path}/\$BAM
-    ln -s ${result_path}/\$BAI
+    x-mapper.sh ${params.mapperStrategy} ${index_gem_file} ${annotation_file} ${primary_reads} ${secondary_reads} ${params.name}_${read_names} ${params.quality} ${params.cpus} ${result_path} ${params.loglevel} 
     """
 }
 
