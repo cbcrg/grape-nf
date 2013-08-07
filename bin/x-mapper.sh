@@ -28,9 +28,6 @@ BAMNAME=${6}
 QUALITY=${7}
 CPUS=${8}
 LOGLEVEL=${9}
-TGEM=${10}
-TKEYS=${11}
-
 
 
 ALLNAME="${INDEX##*/}"
@@ -39,10 +36,14 @@ INDEX_PATH="${INDEX:0:$LENGTH_PATH}"
 NAMEFILE="${ALLNAME%.[^.]*}"
 EXTENSION="${ALLNAME:${#NAMEFILE} + 1}"
 
-echo "mv $INDEX $INDEX_PATH/index.gem"
+
 
 case "$1" in
 'gem')
+mv $INDEX $INDEX_PATH/index.gem
+gemtools --loglevel ${LOGLEVEL} t-index -i $INDEX_PATH/index.gem -a ${ANNOTATION} -m 150 -t ${CPUS}
+TGEM=`ls | grep '.junctions.gem'` 
+TKEYS=`ls | grep '.junctions.keys'`
 gemtools --loglevel ${LOGLEVEL} rna-pipeline -i $INDEX_PATH/index.gem -a ${ANNOTATION} -f ${READS1} ${READS2} -t ${CPUS} -q ${QUALITY} --name ${BAMNAME} -r ${TGEM} -k ${TKEYS}
 ;;
 
