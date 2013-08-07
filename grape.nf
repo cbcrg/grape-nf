@@ -93,18 +93,6 @@ task('index'){
     """
 }
 
-/*t_gem  = channel()
-t_keys = channel()
-
-task('transcriptome-index'){
-    input index_gem
-    output '*.junctions.gem': t_gem
-    output '*.junctions.keys': t_keys
-
-    """
-    gemtools --loglevel ${params.loglevel} t-index -i ${index_gem} -a ${annotation_file} -m 150 -t ${params.cpus}
-    """	
-}*/
 
 
 
@@ -116,15 +104,10 @@ task('rna-pipeline'){
     input primary_reads_file
     input secondary_reads_file
 
-   /* input  t_gem
-    input  t_keys*/
-
     output "*.bam": bam
 
     """  
-    echo ${params.name}
     x-mapper.sh ${params.mapperStrategy} ${index_gem} ${annotation_file} ${primary_reads_file} ${secondary_reads_file} ${params.name} ${params.quality} ${params.cpus} ${params.loglevel} ${bam} 
-#${t_gem} ${t_keys}
     """
 }
 
