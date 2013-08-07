@@ -34,8 +34,8 @@ import org.apache.commons.lang.StringUtils
 params.genome      = './tutorial/data/genome_1Mbp.fa'
 params.name        = 'genome'
 params.annotation  = './tutorial/data/annotation.gtf'
-params.primary     = './tutorial/data/test_1.fastq'
-params.secondary   = './tutorial/data/test_2.fastq'
+params.primary     = './tutorial/data/test_1.fastq.gz'
+params.secondary   = './tutorial/data/test_2.fastq.gz'
 params.quality     = 33
 params.cpus        = 1
 params.output      = './results'
@@ -129,7 +129,6 @@ task('transcript-index'){
 
 
 bam       = channel()
-map       = channel()
 t_gem_file = read(t_gem)
 t_keys_file = read(t_keys)
 
@@ -142,7 +141,6 @@ task('rna-pipeline'){
     input t_gem_file
     input t_keys_file
     
-    output "*.map.gz": map
     output "*.bam": bam
 
     scratch false
