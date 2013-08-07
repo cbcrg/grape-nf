@@ -130,11 +130,11 @@ Pipeline parameters
   `  $ ./nextflow grape.nf --output /home/user/my_results  `
   
   
-**--loglevel** 
+**--mapper** 
    
-* Enable/disable GEM debugging information.
-  * Valid values are: error, warn, info, debug .  
-  `  $ ./nextflow grape.nf --logevel debug  `
+* Which mapper have to be used, you may choose between: `gem` and `tophat2`.
+  * Default value: `gem`  
+  `  $ ./nextflow grape.nf --mapper tophat2  `
   
 Dependencies 
 ------------
@@ -144,6 +144,10 @@ Dependencies
  * Cufflinks - http://cufflinks.cbcb.umd.edu/
  * GEM library - http://algorithms.cnag.cat/wiki/The_GEM_library
  * Flux capacitor - http://flux.sammeth.net/
-
+ 
+When using *Tophat* as mapper 
+  
+  * Tophat2 - http://tophat.cbcb.umd.edu/
+  * Bowtie2 - http://bowtie-bio.sourceforge.net/bowtie2/index.shtml
 
 
