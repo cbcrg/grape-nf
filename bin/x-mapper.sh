@@ -29,7 +29,6 @@ CPUS=${9}
 
 BAMNAME=$(basename ${OUTFILE})
 OUTDIR=$(dirname ${OUTFILE})
-INDEXNAME=$(basename ${INDEX})
 
 case "$1" in
 #
@@ -52,13 +51,13 @@ gemtools rna-pipeline -i index.gem -a ${ANNOTATION} -f ${READS1} ${READS2} -t ${
 #
 'tophat2')
 
-ln -s $INDEX
-ln -s $GENOME $INDEXNAME.fa
+ls ${INDEX}.* | xargs -Ix ln -s x
+ln -s $GENOME $(basename ${INDEX}).fa
 
 [ "$QUALITY" -eq "33" ] && qual=''
 [ "$QUALITY" -eq "64" ] && qual='--phred64-quals'
 
-tophat2 --GTF ${ANNOTATION} ${INDEX} ${READS1} ${READS2} -p ${CPUS} --splice-mismatches 1 ${qual}
+tophat2 -p ${CPUS} --splice-mismatches 1 ${qual} --GTF ${ANNOTATION} $(basename ${INDEX}) ${READS1} ${READS2}
 
 mv tophat_out/accepted_hits.bam ${BAMNAME}.bam
 ;;
