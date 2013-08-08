@@ -18,18 +18,18 @@
 set -e
 set -u
 
-INDEX=${2}
-ANNOTATION=${3}
-READS1=${4}
-READS2=${5}
-OUTFILE=${6}
-QUALITY=${7}
-CPUS=${8}
-
+GENOME=${2}
+INDEX=${3}
+ANNOTATION=${4}
+READS1=${5}
+READS2=${6}
+OUTFILE=${7}
+QUALITY=${8}
+CPUS=${9}
 
 BAMNAME=$(basename ${OUTFILE})
 OUTDIR=$(dirname ${OUTFILE})
-
+DIRINDEX=$(dirname ${INDEX})
 
 case "$1" in
 #
@@ -48,8 +48,14 @@ gemtools rna-pipeline -i index.gem -a ${ANNOTATION} -f ${READS1} ${READS2} -t ${
 # Seee http://tophat.cbcb.umd.edu/
 #
 'tophat2')
-tophat2 --splice-mismatches 1 -p ${CPUS} --GTF ${ANNOTATION} ${INDEX} ${READS1} ${READS2}
+ln -s $GENOME $DIRINDEX/genome.index.fa
+if [ $QUALITY -eq 33 ]; then
+	tophat2 --splice-mismatches 1 -p ${CPUS} --GTF ${ANNOTATION} ${INDEX} ${READS1} ${READS2}
+elif [ $QUALITY -eq 64 ]; then
+	tophat2 --splice-mismatches 1 --phred64-quals -p ${CPUS} --GTF ${ANNOTATION} ${INDEX} ${READS1} ${READS2}
+fi 
 mv tophat_out/accepted_hits.bam ${BAMNAME}.bam
+
 ;;
 
 *)
