@@ -24,7 +24,7 @@ install() {
   # Install missing packages 
   # 
   sudo apt-get update --fix-missing
-  sudo apt-get install -y openjdk-7-jre-headless wget
+  sudo apt-get install -y openjdk-7-jre-headless wget curl unzip
   sudo apt-get install -y samtools cufflinks
 
   #
@@ -40,6 +40,20 @@ install() {
   wget -q http://sammeth.net/artifactory/barna/barna/barna.capacitor/1.2.3/flux-capacitor-1.2.3.tgz
   tar xf flux-capacitor-1.2.3.tgz
   printf 'export PATH=$HOME/flux-capacitor-1.2.3/bin/:$PATH\n' >> ~/.profile
+  
+  #
+  # Install Bowtie2
+  # 
+  wget -q -O bowtie2-2.1.0-linux-x86_64.zip 'http://downloads.sourceforge.net/project/bowtie-bio/bowtie2/2.1.0/bowtie2-2.1.0-linux-x86_64.zip?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fbowtie-bio%2Ffiles%2Fbowtie2%2F2.1.0%2F&ts=1375884688&use_mirror=garr'
+  unzip -q bowtie2-2.1.0-linux-x86_64.zip
+  printf 'export PATH=$HOME/bowtie2-2.1.0:$PATH\n' >> ~/.profile
+  
+  #
+  # Install tophat2
+  # 
+  wget -q http://tophat.cbcb.umd.edu/downloads/tophat-2.0.9.Linux_x86_64.tar.gz
+  tar xf tophat-2.0.9.Linux_x86_64.tar.gz 
+  printf 'export PATH=$HOME/tophat-2.0.9.Linux_x86_64:$PATH\n' >> ~/.profile
 
   #
   # Symlink Grape files
@@ -49,6 +63,7 @@ install() {
   ln -s /vagrant/nextflow 
   ln -s /vagrant/nextflow.config 
   ln -s /vagrant/tutorial/
+  ln -s /vagrant/bin 
   ln -s /vagrant/grape.nf 
 
 } 
