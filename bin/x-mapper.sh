@@ -29,7 +29,7 @@ CPUS=${9}
 
 BAMNAME=$(basename ${OUTFILE})
 OUTDIR=$(dirname ${OUTFILE})
-DIRINDEX=$(dirname ${INDEX})
+INDEXNAME=$(basename ${INDEX})
 
 case "$1" in
 #
@@ -37,7 +37,10 @@ case "$1" in
 # See https://github.com/gemtools/gemtools
 #
 'gem')
+
+# note: it requires the index file name ending with '.gem' suffix
 ln -s ${INDEX} index.gem
+
 gemtools t-index -i index.gem -a ${ANNOTATION} -m 150 -t ${CPUS}
 gemtools rna-pipeline -i index.gem -a ${ANNOTATION} -f ${READS1} ${READS2} -t ${CPUS} -q ${QUALITY} --name ${BAMNAME} -r *.junctions.gem -k *.junctions.keys
 
@@ -48,15 +51,18 @@ gemtools rna-pipeline -i index.gem -a ${ANNOTATION} -f ${READS1} ${READS2} -t ${
 # Seee http://tophat.cbcb.umd.edu/
 #
 'tophat2')
-ln -s $GENOME $DIRINDEX/genome.index.fa
-if [ $QUALITY -eq 33 ]; then
-	tophat2 --splice-mismatches 1 -p ${CPUS} --GTF ${ANNOTATION} ${INDEX} ${READS1} ${READS2}
-elif [ $QUALITY -eq 64 ]; then
-	tophat2 --splice-mismatches 1 --phred64-quals -p ${CPUS} --GTF ${ANNOTATION} ${INDEX} ${READS1} ${READS2}
-fi 
-mv tophat_out/accepted_hits.bam ${BAMNAME}.bam
 
+ln -s $INDEX
+ln -s $GENOME $INDEXNAME.fa
+
+[ "$QUALITY" -eq "33" ] && qual=''
+[ "$QUALITY" -eq "64" ] && qual='--phred64-quals'
+
+tophat2 --GTF ${ANNOTATION} ${INDEX} ${READS1} ${READS2} -p ${CPUS} --splice-mismatches 1 ${qual}
+
+mv tophat_out/accepted_hits.bam ${BAMNAME}.bam
 ;;
+
 
 *)
 echo "Not a valid indexer strategy: $1"; exit 1
