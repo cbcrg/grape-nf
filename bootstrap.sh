@@ -61,7 +61,6 @@ install() {
   mkdir -p ~/grape-nf
   cd grape-nf/
   ln -s /vagrant/nextflow 
-  ln -s /vagrant/nextflow.config 
   ln -s /vagrant/tutorial/
   ln -s /vagrant/bin 
   ln -s /vagrant/grape.nf 
