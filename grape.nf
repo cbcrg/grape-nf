@@ -61,6 +61,8 @@ log.info "\n"
  * Input parameters validation
  */
 
+if( !(params.mapper in ['gem','tophat2'])) { exit 1, "Invalid mapper tool: '${params.mapper}'" }
+
 File genome_file = file(params.genome)
 File annotation_file = file(params.annotation)
 File result_path = file(params.output)
@@ -129,7 +131,7 @@ task('index'){
 index_file = read(index)
 bam = channel()
 
-task('rna-pipeline'){
+task('mapping'){
     input genome_file
     input annotation_file
     input read_names
