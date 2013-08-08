@@ -27,6 +27,7 @@ import org.apache.commons.lang.StringUtils
  * Beatriz M. San Juan <bmsanjuan@gmail.com> 
  * Paolo Di Tommaso <paolo.ditommaso@gmail.com>
  * Pablo Prieto <poena.funesta@gmail.com> 
+ * Miquel Orobitg <miquel.orobitg@crg.es> 
  * Emilio Palumbo <emiliopalumbo@gmail.com> 
  */
 
@@ -42,8 +43,8 @@ params.cpus        = 1
 params.output      = './results'
 
 
-log.info "G R A P E - N F  ~  version 1.2"
-log.info "==============================="
+log.info "G R A P E - N F  ~  version 1.2.1"
+log.info "================================="
 log.info "name               : ${params.name}"
 log.info "genome             : ${params.genome}"
 log.info "annotation         : ${params.annotation}"
@@ -52,7 +53,7 @@ log.info "secondary          : ${params.secondary}"
 log.info "quality            : ${params.quality}"
 log.info "output             : ${params.output}"
 log.info "mapper             : ${params.mapper}"
-log.info "cpu                : ${params.cpus}"
+log.info "cpus               : ${params.cpus}"
 log.info "poolSize           : ${config.poolSize}"
 log.info "\n"
 
