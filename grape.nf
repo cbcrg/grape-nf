@@ -130,6 +130,7 @@ index_file = read(index)
 bam = channel()
 
 task('rna-pipeline'){
+    input genome_file
     input annotation_file
     input read_names
     input primary_reads
@@ -139,7 +140,7 @@ task('rna-pipeline'){
     scratch false
 
     """
-    x-mapper.sh ${params.mapper} ${index_file} ${annotation_file} ${primary_reads} ${secondary_reads} '${result_path}/${params.name}_${read_names}' ${params.quality} ${params.cpus}
+    x-mapper.sh ${params.mapper} ${genome_file} ${index_file} ${annotation_file} ${primary_reads} ${secondary_reads} '${result_path}/${params.name}_${read_names}' ${params.quality} ${params.cpus}
     """
 }
 
