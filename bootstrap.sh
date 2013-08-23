@@ -37,9 +37,9 @@ install() {
   #
   # Install FLUX 
   #
-  wget -q http://sammeth.net/artifactory/barna/barna/barna.capacitor/1.2.3/flux-capacitor-1.2.3.tgz
-  tar xf flux-capacitor-1.2.3.tgz
-  printf 'export PATH=$HOME/flux-capacitor-1.2.3/bin/:$PATH\n' >> ~/.profile
+  wget -q http://sammeth.net/artifactory/barna/barna/barna.capacitor/1.2.4/flux-capacitor-1.2.4.tgz
+  tar xf flux-capacitor-1.2.4.tgz
+  printf 'export PATH=$HOME/flux-capacitor-1.2.4/bin/:$PATH\n' >> ~/.profile
   
   #
   # Install Bowtie2
