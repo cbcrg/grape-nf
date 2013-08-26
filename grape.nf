@@ -176,6 +176,8 @@ task('flux'){
     input bam2
     input annotation_file
     output '*.quantification.gtf': quantification
+    errorStrategy 'ignore'
+    env FLUX_MEM: '6G'   
 
     """
     # Extract the file name w/o the extension
