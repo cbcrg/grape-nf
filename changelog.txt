@@ -1,0 +1,9 @@
+GRAPE-NF CHANGELOG
+------------------
+
+
+- 22 Jul 2013 
+* Added support for multiple read pairs file specification by using wildcard characters in the 
+  '--primary' and '--secondary' pipeline parameters 
+* Upgrade to Nextflow 0.3.2
+ 

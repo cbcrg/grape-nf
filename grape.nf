@@ -43,7 +43,7 @@ params.cpus        = 1
 params.output      = './results'
 
 
-log.info "G R A P E - N F  ~  version 1.2.1"
+log.info "G R A P E - N F  ~  version 1.3.0"
 log.info "================================="
 log.info "name               : ${params.name}"
 log.info "genome             : ${params.genome}"
@@ -62,13 +62,13 @@ log.info "\n"
  * Input parameters validation
  */
 
-if( !(params.mapper in ['gem','tophat2'])) { exit 1, "Invalid mapper tool: '${params.mapper}'" }
+if( !(params.mapper in ['gem','tophat2','hpg'])) { exit 1, "Invalid mapper tool: '${params.mapper}'" }
 
-File genome_file = file(params.genome)
-File annotation_file = file(params.annotation)
-File result_path = file(params.output)
-primary_reads = findReads(params.primary?.toString())
-secondary_reads = findReads(params.secondary?.toString())
+genome_file = file(params.genome)
+annotation_file = file(params.annotation)
+primary_reads = files(params.primary)
+secondary_reads = files(params.secondary)
+result_path = file(params.output)
 
 /*
  * validate input files
@@ -79,7 +79,6 @@ if( !annotation_file.exists() ) exit 2, "Missing annotatio file: ${annotation_fi
 if( !result_path.exists() && !result_path.mkdirs() ) {
     exit 3, "Cannot create output folder: $result_path -- Check file system access permission"
 }
-
 
 /*
  * validate read pairs
@@ -113,49 +112,50 @@ log.info "Read pairs: $read_names"
 log.debug "Primary reads: ${primary_reads *. name }"
 log.debug "Secondary reads: ${secondary_reads *. name }"
 
-/* 
- * Since the GEM index is going to be provided as input of both tasks 'transcript-index' and 'rna-pipeline'
- * it is declared like a 'broadcast' list instead of a plain channel 
- */ 
 
-index = channel()
-
-task('index'){
-    input genome_file
-    output 'genome.index': index
+process index {
+    input:
+    file genome_file
+    
+    output:
+    file 'genome.index*' using genome_index joint true
         
     """
     x-index.sh ${params.mapper} ${genome_file} genome.index ${params.cpus}
     """
 }
 
-index_file = read(index)
-bam = channel()
 
-task('mapping'){
-    input genome_file
-    input annotation_file
-    input read_names
-    input primary_reads
-    input secondary_reads
-    input index_file
-    output "*.bam": bam
+process mapping {
     scratch false
+    input:	
+    file genome_file
+    file annotation_file 
+    file '*' using val(read(genome_index))
+    file primary_reads
+    file secondary_reads
+	val read_names
+	    
+    output:
+    file "*.bam" using bam
 
     """
-    x-mapper.sh ${params.mapper} ${genome_file} ${index_file} ${annotation_file} ${primary_reads} ${secondary_reads} '${result_path}/${params.name}_${read_names}' ${params.quality} ${params.cpus}
+    x-mapper.sh ${params.mapper} ${genome_file} genome.index ${annotation_file} ${primary_reads} ${secondary_reads} '${result_path}/${params.name}_${read_names}' ${params.quality} ${params.cpus}
     """
 }
 
 
-transcripts = channel()
 bam1 = channel()
 bam2 = channel()
-splitter ( bam, [bam2, bam1] )
+bam3 = channel()
+splitter ( bam, [bam1, bam2, bam3] )
 
-task('cufflinks'){
-    input bam1
-    output '*.transcripts.gtf': transcripts
+process cufflinks {
+    input:
+    file bam1
+    
+    output:
+    file '*.transcripts.gtf' using transcripts
 
     """
     # Extract the file name w/o the extension
@@ -172,12 +172,15 @@ task('cufflinks'){
 
 quantification = channel()
 
-task('flux'){
-    input bam2
-    input annotation_file
-    output '*.quantification.gtf': quantification
+process flux {
     errorStrategy 'ignore'
-    env FLUX_MEM: '6G'   
+    
+    input:
+    file bam2
+    file annotation_file
+    
+    output:
+    file '*.quantification.gtf' using quantification
 
     """
     # Extract the file name w/o the extension
@@ -192,47 +195,45 @@ task('flux'){
 /*
  * producing output files
  */
-quantification.each { File it -> copyToResults(it, result_path) }
-transcripts.each { File it -> copyToResults(it, result_path) }
-
+bam3.each { it ->
+	log.info "Copying BAM file to results: ${result_path}/${it.name}" 
+	it.copyTo(result_path) 
+	}
+	
+quantification.each { it -> 
+	log.info "Copying quantification file (flux) to results: ${result_path}/${it.name}" 
+	it.copyTo(result_path) 
+	}
+	
+transcripts.each { it -> 
+	log.info "Copying transcripts file (cufflinks) to results folder: ${result_path}/${it.name}" 
+	it.copyTo(result_path) 
+	}
 
 // ===================== UTILITY FUNCTIONS ============================
-
-
-/*
- * Copy the 'source' file to the result folder.
- * Note: when a file with the same name as the target already exists, it will be deleted
- */
-def copyToResults( File source, File resultPath )  {
-    def target = new File(resultPath, source.name);
-    log.info "Copying file to results: ${target}"
-
-    if(target.exists()) { target.delete()  }
-    source.copyTo(target)
-}
 
 
 /*
  * Given a path returns a sorted list files matching it.
  * The path can contains wildcards characters '*' and '?'
  */
-def List<File> findReads( String fileName ) {
+def List<Path> findReads( String fileName ) {
     def result = []
     if( fileName.contains('*') || fileName.contains('?') ) {
-        def path = new File(fileName).absoluteFile
-        def parent = path.parentFile
-        def filePattern = path.name.replace("?", ".?").replace("*", ".*?")
+        def path = file(fileName)
+        def parent = path.parent
+        def filePattern = path.getName().replace("?", ".?").replace("*", ".*")
         parent.eachFileMatch(~/$filePattern/) { result << it }
         result = result.sort()
     }
     else {
-        result << new File(fileName).absoluteFile
+        result << file(fileName)
     }
 
     return result
 }
 
-def bestMatch( File file1, File file2, boolean singlePair = true) {
+def bestMatch( Path file1, Path file2, boolean singlePair = true) {
     bestMatch( file1.baseName, file2.baseName, singlePair )
 }
 
@@ -270,16 +271,16 @@ def trimReadName( String name ) {
 
 def testFindReads() {
 
-    def path = File.createTempDir()
+    def path = File.createTempDir().toPath()
     try {
-        def file1 = new File(path, 'alpha_1.fastq'); file1.text = 'file1'
-        def file2 = new File(path, 'alpha_2.fastq'); file2.text = 'file2'
-        def file3 = new File(path, 'gamma_1.fastq'); file3.text = 'file3'
-        def file4 = new File(path, 'gamma_2.fastq'); file4.text = 'file4'
+        def file1 = path.resolve('alpha_1.fastq'); file1.text = 'file1'
+        def file2 = path.resolve('alpha_2.fastq'); file2.text = 'file2'
+        def file3 = path.resolve('gamma_1.fastq'); file3.text = 'file3'
+        def file4 = path.resolve('gamma_2.fastq'); file4.text = 'file4'
 
-        assert findReads("$path/alpha_1.fastq") == [file1]
-        assert findReads("$path/*_1.fastq") == [file1, file3]
-        assert findReads("$path/*_2.fastq") == [file2, file4]
+        assert files("$path/alpha_1.fastq") == [file1]
+        assert files("$path/*_1.fastq") == [file1, file3]
+        assert files("$path/*_2.fastq") == [file2, file4]
     }
     finally {
         path.deleteDir()
