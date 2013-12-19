@@ -32,11 +32,11 @@ import org.apache.commons.lang.StringUtils
  */
 
 
-params.genome      = './tutorial/data/genome_1Mbp.fa'
+params.genome      = 'tutorial/ggal/ggal_1_48850000_49020000.Ggal71.500bpflank.fa'
 params.name        = 'genome'
-params.annotation  = './tutorial/data/annotation.gtf'
-params.primary     = './tutorial/data/test_1.fastq.gz'
-params.secondary   = './tutorial/data/test_2.fastq.gz'
+params.annotation  = 'tutorial/ggal/ggal_1_48850000_49020000.bed.gff'
+params.primary     = 'tutorial/ggal/ggal_test_1.fq'
+params.secondary   = 'tutorial/ggal/ggal_test_2.fq'
 params.mapper      = 'gem'
 params.quality     = 33
 params.cpus        = 1
