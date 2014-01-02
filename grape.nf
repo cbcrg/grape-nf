@@ -43,7 +43,7 @@ params.cpus        = 1
 params.output      = './results'
 
 
-log.info "G R A P E - N F  ~  version 1.3.0"
+log.info "G R A P E - N F  ~  version 1.4.0"
 log.info "================================="
 log.info "name               : ${params.name}"
 log.info "genome             : ${params.genome}"
@@ -118,44 +118,81 @@ process index {
     file genome_file
     
     output:
-    file 'genome.index*' using genome_index joint true
-        
-    """
-    x-index.sh ${params.mapper} ${genome_file} genome.index ${params.cpus}
-    """
+    file 'genome.index*' to genome_index 
+      
+	script:
+	// 
+	// GEM tools mapper
+	//  
+	if( params.mapper=='gem' )
+		"""
+		gemtools index -i ${genome_file} -o index.gem -t ${params.cpus} --no-hash
+		mv index.gem genome.index
+		"""
+	
+	// 
+	// Bowtie + Tophat 2 
+	// 	
+	else if( params.mapper == 'tophat2' ) 
+		"""
+		bowtie2-build ${genome_file} genome.index
+		"""
+
 }
 
 
 process mapping {
     scratch false
+    
     input:	
     file genome_file
     file annotation_file 
-    file '*' using val(read(genome_index))
+    file genome_index as '*'
     file primary_reads
     file secondary_reads
 	val read_names
 	    
     output:
-    file "*.bam" using bam
+    file "*.bam" to bam
 
-    """
-    x-mapper.sh ${params.mapper} ${genome_file} genome.index ${annotation_file} ${primary_reads} ${secondary_reads} '${result_path}/${params.name}_${read_names}' ${params.quality} ${params.cpus}
-    """
+    
+	script:
+	bam_name = "${params.name}_${read_names}" 
+	
+	// 
+	// GEM tools mapper
+	//  
+	
+	if( params.mapper == 'gem' )
+		"""
+		# note: it requires the index file name ending with '.gem' suffix
+		ln -s genome.index index.gem
+		gemtools t-index -i index.gem -a ${annotation_file} -m 150 -t ${params.cpus}
+		gemtools rna-pipeline -i index.gem -a ${annotation_file} -f ${primary_reads} ${secondary_reads} -t ${params.cpus} -q ${params.quality} --name ${bam_name} -r *.junctions.gem -k *.junctions.keys
+		"""
+	
+	// 
+	// Bowtie + Tophat 2 
+	// 	
+	else if( params.mapper == 'tophat2' ) { 
+		qual = params.quality == '64' ? '--phred64-quals' : '' 
+		"""
+		tophat2 -p ${params.cpus} --splice-mismatches 1 ${qual} --GTF ${annotation_file} ${genome.index} ${primary_reads} ${secondary_reads}
+		mv tophat_out/accepted_hits.bam ${bam_name}.bam
+		"""
+	}
 }
 
 
-bam1 = channel()
-bam2 = channel()
-bam3 = channel()
-splitter ( bam, [bam1, bam2, bam3] )
+
+(bam1, bam2, bam3) = bam.split(3)
 
 process cufflinks {
     input:
     file bam1
     
     output:
-    file '*.transcripts.gtf' using transcripts
+    file '*.transcripts.gtf' to transcripts
 
     """
     # Extract the file name w/o the extension
@@ -170,17 +207,17 @@ process cufflinks {
 }
 
 
-quantification = channel()
+
 
 process flux {
-    errorStrategy 'ignore'
+    //errorStrategy 'ignore'
     
     input:
-    file bam2
-    file annotation_file
+    file bam2 as '*'
+    file annotation_file as '*'
     
     output:
-    file '*.quantification.gtf' using quantification
+    file '*.quantification.gtf' to quantification
 
     """
     # Extract the file name w/o the extension
