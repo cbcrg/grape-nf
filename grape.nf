@@ -43,7 +43,7 @@ params.cpus        = 1
 params.output      = './results'
 
 
-log.info "G R A P E - N F  ~  version 1.4.0"
+log.info "G R A P E - N F  ~  version 1.5.0"
 log.info "================================="
 log.info "name               : ${params.name}"
 log.info "genome             : ${params.genome}"
@@ -118,7 +118,7 @@ process index {
     file genome_file
     
     output:
-    file 'genome.index*' to genome_index 
+    file 'genome.index*' into genome_index
       
 	script:
 	// 
@@ -147,13 +147,13 @@ process mapping {
     input:	
     file genome_file
     file annotation_file 
-    file genome_index as '*'
+    file genome_index
     file primary_reads
     file secondary_reads
 	val read_names
 	    
     output:
-    file "*.bam" to bam
+    file "*.bam" into bam
 
     
 	script:
@@ -177,7 +177,7 @@ process mapping {
 	else if( params.mapper == 'tophat2' ) { 
 		qual = params.quality == '64' ? '--phred64-quals' : '' 
 		"""
-		tophat2 -p ${params.cpus} --splice-mismatches 1 ${qual} --GTF ${annotation_file} ${genome.index} ${primary_reads} ${secondary_reads}
+		tophat2 -p ${params.cpus} --splice-mismatches 1 ${qual} --GTF ${annotation_file} genome.index ${primary_reads} ${secondary_reads}
 		mv tophat_out/accepted_hits.bam ${bam_name}.bam
 		"""
 	}
@@ -192,7 +192,7 @@ process cufflinks {
     file bam1
     
     output:
-    file '*.transcripts.gtf' to transcripts
+    file '*.transcripts.gtf' into transcripts
 
     """
     # Extract the file name w/o the extension
@@ -213,11 +213,11 @@ process flux {
     //errorStrategy 'ignore'
     
     input:
-    file bam2 as '*'
-    file annotation_file as '*'
+    file bam2
+    file annotation_file
     
     output:
-    file '*.quantification.gtf' to quantification
+    file '*.quantification.gtf' into quantification
 
     """
     # Extract the file name w/o the extension
