@@ -11,6 +11,7 @@
 # - $3: The output index name
 # - $4: The number of threads
 
+[ ! -z $NF_DEBUG_SCRIPT ] && set -x
 set -e
 set -u
 
@@ -26,9 +27,11 @@ mv index.gem ${INDEX}
 
 'tophat2')
 bowtie2-build ${GENOME} ${INDEX}
-# note: bowtie returns multiples files prefixed with the specified 'INDEX' name
-# but we need to return a single file, for this reason a empty file named $INDEX is created
-touch ${INDEX}
+;;
+
+'hpg')
+mkdir $INDEX
+hpg-aligner build-index -g $GENOME -r 10  -i $INDEX
 ;;
 
 *) echo "Not a valid indexer strategy: $1"; exit 1
