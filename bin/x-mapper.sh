@@ -15,6 +15,7 @@
 # - $7: The quality number
 # - $8: The cpu to be used
 
+[ ! -z $NF_DEBUG_SCRIPT ] && set -x
 set -e
 set -u
 
@@ -28,7 +29,6 @@ QUALITY=${8}
 CPUS=${9}
 
 BAMNAME=$(basename ${OUTFILE})
-OUTDIR=$(dirname ${OUTFILE})
 
 case "$1" in
 #
@@ -50,18 +50,21 @@ gemtools rna-pipeline -i index.gem -a ${ANNOTATION} -f ${READS1} ${READS2} -t ${
 # Seee http://tophat.cbcb.umd.edu/
 #
 'tophat2')
-
-ls ${INDEX}.* | xargs -Ix ln -s x
-ln -s $GENOME $(basename ${INDEX}).fa
-
 [ "$QUALITY" -eq "33" ] && qual=''
 [ "$QUALITY" -eq "64" ] && qual='--phred64-quals'
 
-tophat2 -p ${CPUS} --splice-mismatches 1 ${qual} --GTF ${ANNOTATION} $(basename ${INDEX}) ${READS1} ${READS2}
-
+tophat2 -p ${CPUS} --splice-mismatches 1 ${qual} --GTF ${ANNOTATION} ${INDEX} ${READS1} ${READS2}
 mv tophat_out/accepted_hits.bam ${BAMNAME}.bam
 ;;
 
+#
+# HPG aligner
+# See https://github.com/opencb-hpg/hpg-aligner
+#
+'hpg')
+hpg-aligner rna --fq $READS1 --fq2 $READS2 -i $INDEX -o mapped --cpu-threads $CPUS
+mv mapped/alignments.bam ${BAMNAME}.bam
+;;
 
 *)
 echo "Not a valid indexer strategy: $1"; exit 1
@@ -69,9 +72,4 @@ echo "Not a valid indexer strategy: $1"; exit 1
 
 esac 
 
- # Move the BAM files to the result folder
-BAM=${BAMNAME}.bam
-rm -f ${OUTDIR}/${BAM}
-mv ${BAM} ${OUTDIR}/${BAM}
-ln -s ${OUTDIR}/${BAM}
 	    
