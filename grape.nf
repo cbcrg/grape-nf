@@ -43,7 +43,7 @@ params.cpus        = 1
 params.output      = './results'
 
 
-log.info "G R A P E - N F  ~  version 1.2.1"
+log.info "G R A P E - N F  ~  version 1.2.2"
 log.info "================================="
 log.info "name               : ${params.name}"
 log.info "genome             : ${params.genome}"
