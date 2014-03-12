@@ -140,7 +140,6 @@ process index {
 
 }
 
-genome_index_val = Channel.just(genome_index.getVal())
 
 process mapping {
     scratch false
@@ -148,7 +147,7 @@ process mapping {
     input:
     file genome_file
     file annotation_file 
-    file genome_index from genome_index_val
+    file genome_index from genome_index.first()
     file primary_reads
     file secondary_reads
     val read_names
