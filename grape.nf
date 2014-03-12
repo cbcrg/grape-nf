@@ -120,67 +120,69 @@ process index {
     output:
     file 'genome.index*' into genome_index
       
-	script:
-	// 
-	// GEM tools mapper
-	//  
-	if( params.mapper=='gem' )
-		"""
-		gemtools index -i ${genome_file} -o index.gem -t ${params.cpus} --no-hash
-		mv index.gem genome.index
-		"""
-	
-	// 
-	// Bowtie + Tophat 2 
-	// 	
-	else if( params.mapper == 'tophat2' ) 
-		"""
-		bowtie2-build ${genome_file} genome.index
-		"""
+    script:
+    //
+    // GEM tools mapper
+    //
+    if( params.mapper=='gem' )
+        """
+        gemtools index -i ${genome_file} -o index.gem -t ${params.cpus}
+        mv index.gem genome.index
+        """
+
+    //
+    // Bowtie + Tophat 2
+    //
+    else if( params.mapper == 'tophat2' )
+        """
+        bowtie2-build ${genome_file} genome.index
+        """
 
 }
 
+genome_index_val = Channel.just(genome_index.getVal())
 
 process mapping {
     scratch false
     
-    input:	
+    input:
     file genome_file
     file annotation_file 
-    file genome_index
+    file genome_index from genome_index_val
     file primary_reads
     file secondary_reads
-	val read_names
-	    
+    val read_names
+
     output:
     file "*.bam" into bam
 
     
-	script:
-	bam_name = "${params.name}_${read_names}" 
-	
-	// 
-	// GEM tools mapper
-	//  
-	
-	if( params.mapper == 'gem' )
-		"""
-		# note: it requires the index file name ending with '.gem' suffix
-		ln -s genome.index index.gem
-		gemtools t-index -i index.gem -a ${annotation_file} -m 150 -t ${params.cpus}
-		gemtools rna-pipeline -i index.gem -a ${annotation_file} -f ${primary_reads} ${secondary_reads} -t ${params.cpus} -q ${params.quality} --name ${bam_name} -r *.junctions.gem -k *.junctions.keys
-		"""
-	
-	// 
-	// Bowtie + Tophat 2 
-	// 	
-	else if( params.mapper == 'tophat2' ) { 
-		qual = params.quality == '64' ? '--phred64-quals' : '' 
-		"""
-		tophat2 -p ${params.cpus} --splice-mismatches 1 ${qual} --GTF ${annotation_file} genome.index ${primary_reads} ${secondary_reads}
-		mv tophat_out/accepted_hits.bam ${bam_name}.bam
-		"""
-	}
+    script:
+    bam_name = "${params.name}_${read_names}"
+
+    //
+    // GEM tools mapper
+    //
+
+    if( params.mapper == 'gem' )
+        """
+        # note: it requires the index file name ending with '.gem' suffix
+        ln -s genome.index index.gem
+        gemtools t-index -i index.gem -a ${annotation_file} -m 150 -t ${params.cpus}
+        gemtools rna-pipeline -i index.gem -a ${annotation_file} -f ${primary_reads} ${secondary_reads} -t ${params.cpus} -q ${params.quality} --name ${bam_name} -r *.junctions.gem -k *.junctions.keys
+        rm *.filtered.bam
+        """
+
+    //
+    // Bowtie + Tophat 2
+    //
+    else if( params.mapper == 'tophat2' ) {
+        qual = params.quality == '64' ? '--phred64-quals' : ''
+        """
+        tophat2 -p ${params.cpus} --splice-mismatches 1 ${qual} --GTF ${annotation_file} genome.index ${primary_reads} ${secondary_reads}
+        mv tophat_out/accepted_hits.bam ${bam_name}.bam
+        """
+    }
 }
 
 
@@ -199,7 +201,7 @@ process cufflinks {
     fileName=\$(basename "${bam1}")
     baseName="\${fileName%.*}"
 
-    cufflinks -p ${params.cpus} ${bam1}
+     cufflinks -p ${params.cpus} ${bam1}
 
     # rename to target name including the 'bam' name
     mv transcripts.gtf \$baseName.transcripts.gtf
@@ -233,19 +235,19 @@ process flux {
  * producing output files
  */
 bam3.each { it ->
-	log.info "Copying BAM file to results: ${result_path}/${it.name}" 
-	it.copyTo(result_path) 
-	}
-	
+    log.info "Copying BAM file to results: ${result_path}/${it.name}"
+    it.copyTo(result_path)
+    }
+
 quantification.each { it -> 
-	log.info "Copying quantification file (flux) to results: ${result_path}/${it.name}" 
-	it.copyTo(result_path) 
-	}
-	
+    log.info "Copying quantification file (flux) to results: ${result_path}/${it.name}"
+    it.copyTo(result_path)
+    }
+
 transcripts.each { it -> 
-	log.info "Copying transcripts file (cufflinks) to results folder: ${result_path}/${it.name}" 
-	it.copyTo(result_path) 
-	}
+    log.info "Copying transcripts file (cufflinks) to results folder: ${result_path}/${it.name}"
+    it.copyTo(result_path)
+    }
 
 // ===================== UTILITY FUNCTIONS ============================
 
