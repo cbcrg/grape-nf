@@ -66,8 +66,8 @@ if( !(params.mapper in ['gem','tophat2'])) { exit 1, "Invalid mapper tool: '${pa
 
 genome_file = file(params.genome)
 annotation_file = file(params.annotation)
-primary_reads = files(params.primary)
-secondary_reads = files(params.secondary)
+primary_reads = files(params.primary).sort()
+secondary_reads = files(params.secondary).sort()
 result_path = file(params.output)
 
 /*
@@ -100,6 +100,8 @@ if( len == 1 ) {
 
 }
 else {
+    primary_reads.sort()
+    secondary_reads.sort()
     for( int i=0; i<len; i++ ) {
         def (name, err) = bestMatch( primary_reads[i], secondary_reads[i], false )
         if ( err ) { exit 8, err }
