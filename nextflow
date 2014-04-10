@@ -1,6 +1,7 @@
 #!/bin/bash
 #
-#  Copyright (c) 2013, Paolo Di Tommaso <paolo.ditommaso@gmail.com>
+#  Copyright (c) 2013-2014, Centre for Genomic Regulation (CRG).
+#  Copyright (c) 2013-2014, Paolo Di Tommaso and the respective authors.
 #
 #  This file is part of Nextflow.
 #
@@ -48,7 +49,7 @@ function install() {
     else tmpfile=$(mktemp -t XXXXX --tmpdir=$PWD) || exit $?
     fi
     
-    get "http://nextflow.io/releases/latest/nextflow" "$tmpfile" "$1" || exit $?
+    get "http://www.nextflow.io/releases/latest/nextflow" "$tmpfile" "$1" || exit $?
     mv $tmpfile $1 || exit $?
     chmod +x $1 || exit $?
     bash $1 -download || exit $?
@@ -99,7 +100,7 @@ done
 [[ $NXF_EXECUTOR_NAME = 'hazelcast' ]] && NXF_PACK='hz'
 NXF_JAR=${NXF_JAR:-nextflow-$NXF_VER-$NXF_PACK.jar}
 NXF_BIN=${NXF_BIN:-$NXF_HOME/framework/$NXF_VER/$NXF_JAR}
-NXF_BASE=${NXF_BASE:-http://nextflow.io/releases}
+NXF_BASE=${NXF_BASE:-http://www.nextflow.io/releases}
 NXF_PATH=$(dirname $NXF_BIN)
 NXF_URL=${NXF_URL:-$NXF_BASE/v$NXF_VER/$NXF_JAR}
 
