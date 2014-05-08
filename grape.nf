@@ -187,9 +187,14 @@ process mapping {
 }
 
 
+/*
+ * fork the 'bam' channel into three channels
+ */
+(bam1, bam2, bam3) = bam.into(3)
 
-(bam1, bam2, bam3) = bam.split(3)
-
+/*
+ * Execute cufflinks against the BAMs provided by the channel 'bam1'
+ */
 process cufflinks {
     input:
     file bam1
@@ -210,11 +215,7 @@ process cufflinks {
 }
 
 
-
-
 process flux {
-    //errorStrategy 'ignore'
-    
     input:
     file bam2
     file annotation_file
@@ -235,17 +236,17 @@ process flux {
 /*
  * producing output files
  */
-bam3.each { it ->
+bam3.subscribe { it ->
     log.info "Copying BAM file to results: ${result_path}/${it.name}"
     it.copyTo(result_path)
     }
 
-quantification.each { it -> 
+quantification.subscribe { it ->
     log.info "Copying quantification file (flux) to results: ${result_path}/${it.name}"
     it.copyTo(result_path)
     }
 
-transcripts.each { it -> 
+transcripts.subscribe { it ->
     log.info "Copying transcripts file (cufflinks) to results folder: ${result_path}/${it.name}"
     it.copyTo(result_path)
     }
