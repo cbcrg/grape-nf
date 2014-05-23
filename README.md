@@ -139,10 +139,10 @@ Pipeline parameters
 Dependencies 
 ------------
 
- * Java 6+ 
+ * Java 7+ 
  * SAMtools - http://samtools.sourceforge.net/ 
  * Cufflinks - http://cufflinks.cbcb.umd.edu/
- * GEM library - http://algorithms.cnag.cat/wiki/The_GEM_library
+ * GEMtools 1.7.1 - https://github.com/gemtools/gemtools
  * Flux capacitor - http://flux.sammeth.net/
  
 When using *Tophat* as mapper 
