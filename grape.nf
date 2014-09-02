@@ -65,7 +65,6 @@ log.info "\n"
 if( !(params.mapper in ['gem','tophat2'])) { exit 1, "Invalid mapper tool: '${params.mapper}'" }
 
 genome_file = file(params.genome)
-annotation_file = file(params.annotation)
 primary_reads = files(params.primary).sort()
 secondary_reads = files(params.secondary).sort()
 result_path = file(params.output)
@@ -74,11 +73,12 @@ result_path = file(params.output)
  * validate input files
  */
 if( !genome_file.exists() ) exit 1, "Missing genome file: ${genome_file}"
-if( !annotation_file.exists() ) exit 2, "Missing annotatio file: ${annotation_file}"
+//if( !annotation_file.exists() ) exit 2, "Missing annotatio file: ${annotation_file}"
 
 if( !result_path.exists() && !result_path.mkdirs() ) {
     exit 3, "Cannot create output folder: $result_path -- Check file system access permission"
 }
+
 
 /*
  * validate read pairs
@@ -142,24 +142,29 @@ process index {
 
 }
 
+read_pairs = Channel.from(primary_reads)
+                    .merge( Channel.from(secondary_reads) ) { read1, read2 ->
+                        def name = bestMatch( read1, read2, false ) 
+                       return [read1, read2, name ] 
+                    }
+
+annotation_and_reads = Channel.fromPath(params.annotation) .spread(read_pairs)
+
 
 process mapping {
     scratch false
     
     input:
     file genome_file
-    file annotation_file 
     file genome_index from genome_index.first()
-    file primary_reads
-    file secondary_reads
-    val read_names
+    set file(annotation_file), file(primary_reads), file(secondary_reads), name from annotation_and_reads  
 
     output:
-    file "*.bam" into bam
+    set file("*.bam"), file(annotation_file) into bam
 
     
     script:
-    bam_name = "${params.name}_${read_names}"
+    bam_name = "${params.name}_${name}"
 
     //
     // GEM tools mapper
@@ -197,17 +202,17 @@ process mapping {
  */
 process cufflinks {
     input:
-    file bam1
+    set file(bam_file), file(annotation) from bam1
     
     output:
     file '*.transcripts.gtf' into transcripts
 
     """
     # Extract the file name w/o the extension
-    fileName=\$(basename "${bam1}")
+    fileName=\$(basename "${bam_file}")
     baseName="\${fileName%.*}"
 
-     cufflinks -p ${params.cpus} ${bam1}
+     cufflinks -p ${params.cpus} ${bam_file}
 
     # rename to target name including the 'bam' name
     mv transcripts.gtf \$baseName.transcripts.gtf
@@ -217,18 +222,17 @@ process cufflinks {
 
 process flux {
     input:
-    file bam2
-    file annotation_file
+    set file(bam_file), file(annotation_file) from bam2
     
     output:
     file '*.quantification.gtf' into quantification
 
     """
     # Extract the file name w/o the extension
-    fileName=\$(basename "${bam2}")
+    fileName=\$(basename "${bam_file}")
     baseName="\${fileName%.*}"
 
-    flux-capacitor -i ${bam2} -a ${annotation_file} -o \$baseName.quantification.gtf --threads ${params.cpus}
+    flux-capacitor -i ${bam_file} -a ${annotation_file} -o \$baseName.quantification.gtf --threads ${params.cpus}
     """
 }
 
@@ -237,8 +241,9 @@ process flux {
  * producing output files
  */
 bam3.subscribe { it ->
-    log.info "Copying BAM file to results: ${result_path}/${it.name}"
-    it.copyTo(result_path)
+    def bam = it[0]
+    log.info "Copying BAM file to results: ${result_path}/${bam.name}"
+    bam.copyTo(result_path)
     }
 
 quantification.subscribe { it ->
