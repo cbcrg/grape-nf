@@ -8,57 +8,22 @@ Yet another Grape pipeline implementation
 Quick start 
 -----------
 
-Clone the git repository on your computer with the following command:
+Make sure you have all the required dependencies listed in the last section.
 
-    $ git clone git@github.com:cbcrg/grape-nf.git
+Install the Nextflow runtime by running the following command:
+
+    $ curl -fsSL get.nextflow.io | bash
+
+
+When done, you can launch the pipeline execution by entering the command shown below:
+
+    $ nextflow run cbcrg/grape-nf
     
 
-Make sure you have installed the required dependencies listed below, or just 
-use the self-configured Vagrant VM. 
-
-
-When done, move in the project root folder named `grape-nf`, 
-which contains an example dataset in the `tutorial` folder. 
-
-Launch the pipeline by entering the following command 
-on your shell terminal:
-
-    $ ./nextflow grape.nf
+By default the pipeline is executed against the provided example dataset. 
+Check the *Pipeline parameters*  section below to see how enter your data on the program 
+command line.     
     
-
-By default the pipeline is executed against the provided tutorial dataset. 
-Check the *Pipeline parameters*  section below to see how enter your data on the program command line.     
-    
-
-Run using Vagrant
------------------
-
-To avoid having to install all the pipeline dependencies, you may test the pipeline using 
-the provided Vagrant VM, which downloads and configures all the required pieces 
-of software for you. See http://www.vagrantup.com for more details about Vagrant.
-
-The Vagrant environment uses the Ubuntu Precise 64 virtual machine, if you don't have it 
-in your Vagrant boxes list, it will be downloaded automatically. 
-
-To launch the VM move to the pipeline root folder `grape-nf` and enter the following command:
-  
-    $ vagrant up 
-
-
-When it boots up and the configuration steps are terminated, login into the VM instance 
-and move to the Grape pipeline folder 
-
-    $ vagrant ssh 
-    $ cd grape-nf
-    
-Now you can launch the pipeline as shown: 
-
-	 $ ./nextflow grape.nf
-
-
-
-When finished, stop the VM using the command `vagrant halt` or `vagrant destroy`, depending if you
-want to temporary stop the execution or delete permanently the VM with all its files. 
 
 
 Pipeline parameters
@@ -70,7 +35,7 @@ Pipeline parameters
 * It should end in '.fa' 
 * Involved in the task: index.
   * By default is set to the Grape-NF's localization: './tutorial/data/genome_1Mbp.fa'
-  `  $ ./nextflow grape.nf --genome /home/user/my_fastas/example.fa  `
+  `  $ nextflow run cbcrg/grape-nf --genome /home/user/my_fastas/example.fa  `
     
   
 
@@ -80,7 +45,7 @@ Pipeline parameters
 * The file must end in '.gtf'  
 * Involved in the task: transcriptome-index, rna-pipeline, flux.
   * By default is set to the Grape-NF'localization: './tutorial/data/annotation.gtf' 
-  `  $ ./nextflow grape.nf --annotation /users/bm/notes.gtf  `
+  `  $ nextflow run cbcrg/grape-nf --annotation /users/bm/notes.gtf  `
 
   
 **--primary** 
@@ -91,7 +56,7 @@ Pipeline parameters
 * It must end in '_1.fastq'.
 * Involved in the task: rna-pipeline.
   * By default is set to the Grape-NF's location: './tutorial/data/test_1.fastq' 
-  `  $ ./nextflow grape.nf --primary '/home/dataset/*_1.fastq'`
+  `  $ nextflow run cbcrg/grape-nf --primary '/home/dataset/*_1.fastq'`
   
   
 **--secondary** 
@@ -102,7 +67,7 @@ Pipeline parameters
 * It must end in '_2.fastq'.  
 * Involved in the task: rna-pipeline.  
   * By default is set to the Grape-NF's location: './tutorial/data/test_2.fastq' 
-  `  $ ./nextflow grape.nf --secondary '/home/dataset/*_2.fastq'`
+  `  $ nextflow run cbcrg/grape-nf --secondary '/home/dataset/*_2.fastq'`
 
 
 **--quality** 
@@ -111,7 +76,7 @@ Pipeline parameters
 * It can be either 33 or 64  
 * Involved in the task: rna-pipeline.
   * By default is set to: 33.  
-  `  $ ./nextflow grape.nf --quality 64  `
+  `  $ nextflow run cbcrg/grape-nf --quality 64  `
 
 
 **--cpus** 
@@ -119,7 +84,7 @@ Pipeline parameters
 * Sets the number of CPUs used in every tasks (default 1).  
 * Involved in the task: index, transcriptome-index, rna-pipeline, cufflinks, flux.
   * By default is set to the number of the available cores.  
-  `  $ ./nextflow grape.nf --cpus 10  `
+  `  $ nextflow run cbcrg/grape-nf --cpus 10  `
   
   
 **--output** 
@@ -127,14 +92,75 @@ Pipeline parameters
 * Specifies the folder where the results will be stored for the user.  
 * It does not matter if the folder does not exist.
   * By default is set to Grape-NF's folder: './results' 
-  `  $ ./nextflow grape.nf --output /home/user/my_results  `
+  `  $ nextflow run cbcrg/grape-nf --output /home/user/my_results  `
   
   
 **--mapper** 
    
 * Which mapper have to be used, you may choose between: `gem` and `tophat2`.
   * Default value: `gem`  
-  `  $ ./nextflow grape.nf --mapper tophat2  `
+  `  $ nextflow run cbcrg/grape-nf --mapper tophat2  `
+  
+  
+
+Run with Docker 
+---------------- 
+
+Grape-NF dependecies are also distributed by using a [Docker](http://www.docker.com) container 
+which frees you from the installation and configuration of all the pieces of software required 
+by Grape-NF. 
+
+The Grape-NF Docker image is published at this address https://registry.hub.docker.com/u/cbcrg/grape-nf/
+
+If you have Docker installed in your computer pull this image by entering the following command: 
+
+    $ docker pull cbcrg/grape-nf
+  
+  
+After that you will be able to run Grape-NF using the following command line: 
+
+    $ nextflow run cbcrg/grape-nf -with-docker --mapper tophat2
+  
+  
+Note: currently Docker based installation only support Tophat.   
+
+
+Cluster support
+---------------
+
+Grape-NF execution relies on [Nextflow](http://www.nextflow.io) framework which provides an 
+abstraction between the pipeline functional logic and the underlying processing system.
+
+Thus it is possible to execute it on your computer or any cluster resource
+manager without modifying it.
+
+Currently the following clusters are supported:
+
+  + Oracle/Univa/Open Grid Engine (SGE)
+  + Platform LSF
+  + SLURM
+  + PBS/Torque
+
+
+By default the pipeline is parallelized by spanning multiple threads in the machine where the script is launched.
+
+To submit the execution to a SGE cluster create a file named `nextflow.config`, in the directory
+where the pipeline is going to be launched, with the following content:
+
+    task {
+      processor='sge'
+      queue='<your queue name>'
+    }
+
+In doing that, tasks will be executed through the `qsub` SGE command, and so your pipeline will behave like any
+other SGE job script, with the benefit that *Nextflow* will automatically and transparently manage the tasks
+synchronisation, file(s) staging/un-staging, etc.
+
+Alternatively the same declaration can be defined in the file `$HOME/.nextflow/config`.
+
+To lean more about the avaible settings and the configuration file read the Nextflow documentation 
+ http://www.nextflow.io/docs/latest/config.html
+  
   
 Dependencies 
 ------------
