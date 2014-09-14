@@ -1,5 +1,3 @@
-#!/usr/bin/env nextflow
-
 /*
  * Copyright (c) 2013, Centre for Genomic Regulation (CRG) and the authors.
  *
@@ -32,15 +30,15 @@ import org.apache.commons.lang.StringUtils
  */
 
 
-params.genome      = 'tutorial/ggal/ggal_1_48850000_49020000.Ggal71.500bpflank.fa'
-params.name        = 'genome'
-params.annotation  = 'tutorial/ggal/ggal_1_48850000_49020000.bed.gff'
-params.primary     = 'tutorial/ggal/ggal_test_1.fq'
-params.secondary   = 'tutorial/ggal/ggal_test_2.fq'
-params.mapper      = 'gem'
+params.genome      = "$baseDir/tutorial/ggal/ggal_1_48850000_49020000.Ggal71.500bpflank.fa"
+params.name        = "genome"
+params.annotation  = "$baseDir/tutorial/ggal/ggal_1_48850000_49020000.bed.gff"
+params.primary     = "$baseDir/tutorial/ggal/ggal_test_1.fq"
+params.secondary   = "$baseDir/tutorial/ggal/ggal_test_2.fq"
+params.mapper      = "gem"
 params.quality     = 33
 params.cpus        = 1
-params.output      = './results'
+params.output      = "results/"
 
 
 log.info "G R A P E - N F  ~  version 1.5.1"
