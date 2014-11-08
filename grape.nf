@@ -41,7 +41,7 @@ params.cpus        = 1
 params.output      = "results/"
 
 
-log.info "G R A P E - N F  ~  version 1.5.1"
+log.info "G R A P E - N F  ~  version 1.5.2"
 log.info "================================="
 log.info "name               : ${params.name}"
 log.info "genome             : ${params.genome}"
@@ -145,9 +145,9 @@ process mapping {
     scratch false
     
     input:
-    file genome_file
     file annotation_file 
     file genome_index from genome_index.first()
+    file 'genome.index.fa' from genome_file 
     file primary_reads
     file secondary_reads
     val read_names
