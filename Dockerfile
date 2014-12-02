@@ -24,7 +24,7 @@ RUN wget -q http://barnaserver.com/gemtools/releases/GEMTools-static-core2-1.7.1
   ln -s /opt/gemtools-1.7.1-core2 /opt/gemtools  
 
 # Flux Capacitor
-RUN wget -q http://sammeth.net/artifactory/barna/barna/barna.capacitor/1.2.4/flux-capacitor-1.2.4.tgz; \
+RUN wget -q http://artifactory.sammeth.net/artifactory/barna/barna/barna.capacitor/1.2.4/flux-capacitor-1.2.4.tgz; \
   tar xf flux-capacitor-1.2.4.tgz -C /opt; \
   rm -rf flux-capacitor-1.2.4.tgz; \
   ln -s /opt/flux-capacitor-1.2.4 /opt/flux
