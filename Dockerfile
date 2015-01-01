@@ -12,21 +12,21 @@ RUN apt-get update -q --fix-missing; \
 RUN apt-get install -q -y samtools libboost-all-dev 
 
 # Cufflinks
-RUN wget -q http://cufflinks.cbcb.umd.edu/downloads/cufflinks-2.1.1.Linux_x86_64.tar.gz; \
-  tar xf cufflinks-2.1.1.Linux_x86_64.tar.gz -C /opt; \
-  rm -rf cufflinks-2.1.1.Linux_x86_64.tar.gz; \
+RUN wget -q http://cole-trapnell-lab.github.io/cufflinks/assets/downloads/cufflinks-2.2.1.Linux_x86_64.tar.gz && \
+  tar xf cufflinks-2.1.1.Linux_x86_64.tar.gz -C /opt && \
+  rm -rf cufflinks-2.1.1.Linux_x86_64.tar.gz && \
   ln -s /opt/cufflinks-2.1.1.Linux_x86_64/ /opt/cufflinks
 
 # GEMtools
-RUN wget -q http://barnaserver.com/gemtools/releases/GEMTools-static-core2-1.7.1.tar.gz; \
-  tar xf GEMTools-static-core2-1.7.1.tar.gz -C /opt; \
-  rm -rf GEMTools-static-core2-1.7.1.tar.gz; \
+RUN wget -q http://barnaserver.com/gemtools/releases/GEMTools-static-core2-1.7.1.tar.gz && \
+  tar xf GEMTools-static-core2-1.7.1.tar.gz -C /opt && \
+  rm -rf GEMTools-static-core2-1.7.1.tar.gz && \
   ln -s /opt/gemtools-1.7.1-core2 /opt/gemtools  
 
 # Flux Capacitor
-RUN wget -q http://artifactory.sammeth.net/artifactory/barna/barna/barna.capacitor/1.2.4/flux-capacitor-1.2.4.tgz; \
-  tar xf flux-capacitor-1.2.4.tgz -C /opt; \
-  rm -rf flux-capacitor-1.2.4.tgz; \
+RUN wget -q http://artifactory.sammeth.net/artifactory/barna/barna/barna.capacitor/1.2.4/flux-capacitor-1.2.4.tgz && \
+  tar xf flux-capacitor-1.2.4.tgz -C /opt && \
+  rm -rf flux-capacitor-1.2.4.tgz && \
   ln -s /opt/flux-capacitor-1.2.4 /opt/flux
  
 # Bowtie 
