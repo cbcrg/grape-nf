@@ -12,7 +12,7 @@ RUN apt-get update -q --fix-missing; \
 RUN apt-get install -q -y samtools libboost-all-dev 
 
 # Cufflinks
-RUN wget -q http://cole-trapnell-lab.github.io/cufflinks/assets/downloads/cufflinks-2.2.1.Linux_x86_64.tar.gz && \
+RUN wget -q http://cole-trapnell-lab.github.io/cufflinks/assets/downloads/cufflinks-2.1.1.Linux_x86_64.tar.gz && \
   tar xf cufflinks-2.1.1.Linux_x86_64.tar.gz -C /opt && \
   rm -rf cufflinks-2.1.1.Linux_x86_64.tar.gz && \
   ln -s /opt/cufflinks-2.1.1.Linux_x86_64/ /opt/cufflinks
